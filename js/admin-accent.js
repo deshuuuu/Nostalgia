@@ -1,6 +1,14 @@
 (function () {
   'use strict';
 
+  // Safety guard: prevent stale autosaves from overwriting newer settings_json keys.
+  if (!document.querySelector('script[data-nostalgia-safe-save]')) {
+    const script = document.createElement('script');
+    script.src = '../js/admin-safe-save.js?v=20260818-19';
+    script.dataset.nostalgiaSafeSave = '1';
+    document.head.appendChild(script);
+  }
+
   const cfg = window.APP_CONFIG || {};
   let timer = null;
   let initialized = false;
