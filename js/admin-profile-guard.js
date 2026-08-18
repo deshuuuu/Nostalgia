@@ -6,6 +6,7 @@
   let loaded = false;
   let edited = false;
   let restoring = false;
+  let pollTimer = null;
 
   const $ = (s, root = document) => root.querySelector(s);
   const $$ = (s, root = document) => [...root.querySelectorAll(s)];
@@ -131,6 +132,10 @@
       if (!event.isTrusted) return;
       if (event.target.closest('#addProfileField,.remove-button')) edited = true;
     }, true);
+
+    document.querySelector('#adminNav [data-tab="profile"]')?.addEventListener('click', () => {
+      if (!edited) setTimeout(restoreUi, 100);
+    });
   }
 
   function watchProfileUi() {
@@ -152,6 +157,12 @@
       });
       appObserver.observe(app, { attributes: true, attributeFilter: ['class'] });
     }
+
+    clearInterval(pollTimer);
+    pollTimer = setInterval(() => {
+      const appVisible = app && !app.classList.contains('hidden');
+      if (appVisible && loaded && !edited && !restoring) restoreUi();
+    }, 900);
   }
 
   function init() {
@@ -173,6 +184,7 @@
     snapshot = normalizeProfile(profile);
     loaded = true;
     edited = false;
+    setTimeout(restoreUi, 50);
   };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
