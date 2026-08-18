@@ -26,4 +26,11 @@
     const { data } = window.db.storage.from(cfg.storageBucket || 'site-media').getPublicUrl(path);
     return data?.publicUrl || '';
   };
+
+  // Admin-only helper: make first-screen settings and media uploads auto-save.
+  if (/\/admin\/?(?:index\.html)?$/i.test(location.pathname)) {
+    const helper = document.createElement('script');
+    helper.src = new URL('js/admin-autosave.js?v=20260818-1', siteBaseUrl).href;
+    document.head.appendChild(helper);
+  }
 })();
