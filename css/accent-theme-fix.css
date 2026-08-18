@@ -1,0 +1,62 @@
+/* Keep all emphasis colors derived from the user-selected point color. */
+:root {
+  --accent-soft: color-mix(in srgb, var(--accent, #d9d0a4) 76%, white 24%);
+  --accent-deep: color-mix(in srgb, var(--accent, #d9d0a4) 72%, black 28%);
+  --accent-faint: color-mix(in srgb, var(--accent, #d9d0a4) 28%, transparent);
+  --line: color-mix(in srgb, var(--accent, #d9d0a4) 28%, transparent);
+}
+
+/* Major identity / section text */
+.entry-content h1,
+.hero-copy h2,
+.section-heading h2,
+.profile-content h3,
+.brand-button,
+.story-card summary,
+#widgetTrackTitle,
+#musicWidget .widget-titlebar,
+.primary-button,
+.frame-caption {
+  color: var(--accent-soft) !important;
+}
+
+/* Direct accent emphasis */
+.entry-kicker,
+.eyebrow,
+.profile-field dt,
+.mini-label,
+.status-dot,
+.character-frame::after,
+.story-card summary::after,
+.top-nav .nav-button.active,
+.top-nav .nav-button:hover {
+  color: var(--accent) !important;
+}
+
+/* Lines and controls also track the point color without becoming too loud. */
+.site-header,
+.profile-fields,
+.character-frame,
+.profile-image-panel,
+.gallery-item,
+.primary-button,
+#musicWidget .playlist-control {
+  border-color: var(--accent-faint) !important;
+}
+
+.primary-button::before,
+.primary-button::after,
+.top-nav .nav-button::after {
+  background-color: var(--accent) !important;
+}
+
+/* Keep secondary/body copy neutral for readability. */
+.entry-tagline,
+.hero-tagline,
+.profile-bio,
+.profile-field dd,
+.story-body,
+.gallery-item figcaption,
+.site-footer {
+  color: var(--muted) !important;
+}
