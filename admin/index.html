@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#55564f" />
   <title>Character Home · Admin</title>
-  <link rel="stylesheet" href="../css/admin.css?v=20260818-17" />
+  <link rel="stylesheet" href="../css/admin.css?v=20260818-25" />
 </head>
 <body>
   <div id="adminLogin" class="login-screen">
@@ -43,7 +43,7 @@
     <main class="admin-main">
       <header class="admin-topbar"><div><p class="eyebrow">CONTENT MANAGEMENT</p><h2 id="currentTabTitle">CHARACTER</h2></div><div class="topbar-status"><span id="saveStatus">준비됨</span><button id="saveAllButton" class="primary-button" type="button">전체 저장</button></div></header>
 
-      <section class="admin-tab active" data-tab-panel="character"><div class="panel-grid two"><article class="admin-card"><h3>기본 정보</h3><label>캐릭터 이름<input id="characterNameInput" type="text" /></label><label>한 줄 문구<input id="taglineInput" type="text" /></label><label>대표 이미지<input id="characterImageFile" type="file" accept="image/*" /></label><div id="characterImagePreview" class="file-preview image-preview"></div></article><article class="admin-card hint-card"><h3>사용 방법</h3><p>대표 이미지는 HOME과 PROFILE에 함께 사용됩니다. 이미지를 선택하면 업로드 후 자동 저장됩니다.</p></article></div></section>
+      <section class="admin-tab active" data-tab-panel="character"><div class="panel-grid two"><article class="admin-card"><h3>기본 정보</h3><label>캐릭터 이름<input id="characterNameInput" type="text" /></label><label>한 줄 문구<input id="taglineInput" type="text" /></label><label>대표 이미지<input id="characterImageFile" type="file" accept="image/*" /></label><div id="characterImagePreview" class="file-preview image-preview"></div></article><article class="admin-card hint-card"><h3>사용 방법</h3><p>HOME 대표 이미지와 PROFILE 이미지는 각각 따로 업로드하고 관리합니다.</p></article></div></section>
 
       <section class="admin-tab" data-tab-panel="profile"><article class="admin-card"><h3>프로필 소개</h3><label>소개글<textarea id="profileBioInput" rows="8"></textarea></label><div class="subhead-row"><h3>프로필 항목</h3><button id="addProfileField" class="secondary-button" type="button">+ 항목 추가</button></div><div id="profileFieldsEditor" class="stack-list"></div></article></section>
 
@@ -59,23 +59,24 @@
 
       <section class="admin-tab" data-tab-panel="cursor"><div class="panel-grid two"><article class="admin-card"><h3>전용 커서</h3><label>커서 이미지<input id="cursorFile" type="file" accept="image/png,image/webp,image/gif,image/svg+xml" /></label><label>커서 크기(px)<input id="cursorSizeInput" type="number" min="12" max="160" /></label><label>클릭 시 축소 비율<input id="cursorScaleInput" type="number" min="0.4" max="1" step="0.01" /></label><div id="cursorPreview" class="file-preview image-preview square"></div></article><article class="admin-card"><h3>잔상 / 클릭 효과</h3><label class="check-row"><input id="trailEnabledCheck" type="checkbox" /> 커서 잔상 사용</label><label>잔상 스타일<select id="trailStyleInput"><option value="sparkle">SPARKLE</option><option value="dot">DOT</option><option value="glow">GLOW</option><option value="star">STAR</option><option value="image">IMAGE</option></select></label><label>잔상 간격(px)<input id="trailSpacingInput" type="number" min="2" max="80" /></label><label>잔상 크기(px)<input id="trailSizeInput" type="number" min="2" max="80" /></label><label>사라지는 시간(ms)<input id="trailFadeInput" type="number" min="100" max="3000" /></label><label>잔상 이미지<input id="trailImageFile" type="file" accept="image/*" /></label><label class="check-row"><input id="clickParticlesCheck" type="checkbox" /> 클릭 파티클 사용</label></article></div></section>
 
-      <section class="admin-tab" data-tab-panel="site"><div class="panel-grid two"><article class="admin-card"><h3>첫 화면 / 페이지 설정</h3><label>첫 화면 문구<input id="entryKickerInput" type="text" placeholder="A MEMORY, KEPT QUIETLY." /></label><label>첫 화면 이미지<input id="entryImageFile" type="file" accept="image/*" /></label><div id="entryImagePreview" class="file-preview image-preview entry-preview"></div><label>안내 문구<input id="entryNoteInput" type="text" /></label><label>브라우저 제목<input id="siteTitleInput" type="text" /></label><label>ENTER 버튼 문구<input id="enterLabelInput" type="text" /></label><label>포인트 컬러<input id="accentColorInput" type="color" /></label><label>배경 컬러<input id="backgroundColorInput" type="color" /></label><p class="muted">첫 화면 문구/안내 문구/버튼 문구는 입력 후 다른 곳을 클릭하면 자동 저장됩니다.</p><p class="muted">첫 화면 이미지는 선택 후 업로드가 끝나면 자동 저장됩니다.</p><p class="muted">첫 화면의 이름과 한마디는 CHARACTER 메뉴의 ‘캐릭터 이름’과 ‘한 줄 문구’를 그대로 사용합니다.</p></article><article class="admin-card danger-card"><h3>데이터 주의</h3><p>관리자 페이지는 비밀번호를 코드에 저장하지 않습니다. Supabase Auth 세션과 RLS가 실제 수정 권한을 판단합니다.</p><p>프로젝트의 service_role 키는 절대로 config.js에 넣지 마세요.</p></article></div></section>
+      <section class="admin-tab" data-tab-panel="site"><div class="panel-grid two"><article class="admin-card"><h3>첫 화면 / 페이지 설정</h3><label>첫 화면 문구<input id="entryKickerInput" type="text" placeholder="A MEMORY, KEPT QUIETLY." /></label><label>첫 화면 이미지<input id="entryImageFile" type="file" accept="image/*" /></label><div id="entryImagePreview" class="file-preview image-preview entry-preview"></div><label>안내 문구<input id="entryNoteInput" type="text" /></label><label>브라우저 제목<input id="siteTitleInput" type="text" /></label><label>ENTER 버튼 문구<input id="enterLabelInput" type="text" /></label><label>포인트 컬러<input id="accentColorInput" type="color" /></label><label>배경 컬러<input id="backgroundColorInput" type="color" /></label><p class="muted">관리자 페이지를 열거나 업데이트하는 것만으로는 설정이 저장되지 않습니다. 실제로 값을 변경했을 때만 저장됩니다.</p><p class="muted">첫 화면의 이름과 한마디는 CHARACTER 메뉴의 ‘캐릭터 이름’과 ‘한 줄 문구’를 그대로 사용합니다.</p></article><article class="admin-card danger-card"><h3>데이터 주의</h3><p>관리자 페이지는 비밀번호를 코드에 저장하지 않습니다. Supabase Auth 세션과 RLS가 실제 수정 권한을 판단합니다.</p><p>프로젝트의 service_role 키는 절대로 config.js에 넣지 마세요.</p></article></div></section>
     </main>
   </div>
 
   <div id="toast" class="toast" role="status"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="../js/config.js?v=20260818-17"></script>
-  <script src="../js/defaults.js?v=20260818-17"></script>
-  <script src="../js/supabase-client.js?v=20260818-17"></script>
-  <script src="../js/admin.js?v=20260818-17"></script>
-  <script src="../js/admin-autosave.js?v=20260818-17"></script>
-  <script src="../js/admin-playlist.js?v=20260818-17"></script>
-  <script src="../js/admin-playlist-labels.js?v=20260818-17"></script>
-  <script src="../js/admin-background.js?v=20260818-17"></script>
-  <script src="../js/admin-accent.js?v=20260818-17"></script>
-  <script src="../js/admin-image-split.js?v=20260818-18"></script>
-  <script src="../js/admin-media-delete.js?v=20260818-18"></script>
+  <script src="../js/config.js?v=20260818-25"></script>
+  <script src="../js/defaults.js?v=20260818-25"></script>
+  <script src="../js/supabase-client.js?v=20260818-25"></script>
+  <script data-nostalgia-safe-save="1" src="../js/admin-safe-save.js?v=20260818-25"></script>
+  <script src="../js/admin.js?v=20260818-25"></script>
+  <script src="../js/admin-autosave.js?v=20260818-25"></script>
+  <script src="../js/admin-playlist.js?v=20260818-25"></script>
+  <script src="../js/admin-playlist-labels.js?v=20260818-25"></script>
+  <script src="../js/admin-background.js?v=20260818-25"></script>
+  <script src="../js/admin-accent.js?v=20260818-25"></script>
+  <script src="../js/admin-image-split.js?v=20260818-25"></script>
+  <script src="../js/admin-media-delete.js?v=20260818-25"></script>
 </body>
 </html>
