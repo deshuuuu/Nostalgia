@@ -113,17 +113,48 @@
     return patch;
   }
 
+  function normalizeProfile(value) {
+    return {
+      bio: String(value?.bio || ''),
+      fields: Array.isArray(value?.fields)
+        ? value.fields.map(item => ({
+            label: String(item?.label || ''),
+            value: String(item?.value || '')
+          }))
+        : []
+    };
+  }
+
+  function profileHasContent(profile) {
+    const p = normalizeProfile(profile);
+    return Boolean(p.bio.trim() || p.fields.some(item => item.label.trim() || item.value.trim()));
+  }
+
   function collectProfile(existingProfile) {
+    const existing = normalizeProfile(existingProfile);
     const bioInput = $('#profileBioInput');
     const rows = $$('.profile-field-row');
-    if (!bioInput || !rows.length) return existingProfile || { bio: '', fields: [] };
-    return {
+    if (!bioInput || !rows.length) return existing;
+
+    const candidate = {
       bio: bioInput.value,
       fields: rows.map(row => ({
         label: $('.field-label', row)?.value.trim() || '',
         value: $('.field-value', row)?.value || ''
       })).filter(item => item.label || item.value)
     };
+
+    const profileWasEdited = window.nostalgiaProfileWasEdited?.() === true;
+    const suspiciouslyEmpty = profileHasContent(existing) && !profileHasContent(candidate);
+    const suspiciouslyShort = !profileWasEdited && existing.fields.length > candidate.fields.length;
+    const missingBio = !profileWasEdited && existing.bio.trim() && !candidate.bio.trim();
+
+    if (!profileWasEdited && (suspiciouslyEmpty || suspiciouslyShort || missingBio)) {
+      console.warn('PROFILE 입력 UI가 비정상적으로 비어 있어 DB의 기존 profile_json을 보존합니다.');
+      return existing;
+    }
+
+    return candidate;
   }
 
   function collectStory(existingStory) {
@@ -161,12 +192,13 @@
         ...latestSettings,
         ...collectSettingsPatch(latestSettings)
       };
+      const safeProfile = collectProfile(latest?.profile_json);
 
       const payload = {
         character_name: $('#characterNameInput')?.value.trim() || latest?.character_name || 'CHARACTER',
         tagline: $('#taglineInput')?.value ?? latest?.tagline ?? '',
         character_image_url: latest?.character_image_url || '',
-        profile_json: collectProfile(latest?.profile_json),
+        profile_json: safeProfile,
         story_json: collectStory(latest?.story_json),
         settings_json: mergedSettings,
         keycap_html: $('#keycapHtmlInput')?.value || latest?.keycap_html || window.DEFAULT_KEYCAP_HTML,
@@ -179,6 +211,7 @@
         .eq('id', cfg.siteId || 1);
       if (error) throw error;
 
+      window.nostalgiaProfileMarkSaved?.(safeProfile);
       Object.keys(pendingMedia).forEach(key => delete pendingMedia[key]);
       Object.keys(pendingKeycapSounds).forEach(key => delete pendingKeycapSounds[key]);
       status('저장됨');
