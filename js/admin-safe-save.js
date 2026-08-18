@@ -130,26 +130,43 @@
     return Boolean(p.bio.trim() || p.fields.some(item => item.label.trim() || item.value.trim()));
   }
 
+  function profileLooksWiped(candidate, protectedProfile) {
+    const current = normalizeProfile(candidate);
+    const wanted = normalizeProfile(protectedProfile);
+    if (!profileHasContent(wanted)) return false;
+    if (wanted.bio.trim() && !current.bio.trim()) return true;
+    if (wanted.fields.length > current.fields.length) return true;
+    for (let i = 0; i < wanted.fields.length; i += 1) {
+      const a = wanted.fields[i] || { label: '', value: '' };
+      const b = current.fields[i] || { label: '', value: '' };
+      if (a.label.trim() && !b.label.trim()) return true;
+      if (a.value.trim() && !b.value.trim()) return true;
+    }
+    return false;
+  }
+
   function collectProfile(existingProfile) {
     const existing = normalizeProfile(existingProfile);
     const bioInput = $('#profileBioInput');
     const rows = $$('.profile-field-row');
     if (!bioInput || !rows.length) return existing;
 
-    const candidate = {
+    const candidate = normalizeProfile({
       bio: bioInput.value,
       fields: rows.map(row => ({
         label: $('.field-label', row)?.value.trim() || '',
         value: $('.field-value', row)?.value || ''
       })).filter(item => item.label || item.value)
-    };
+    });
+
+    const guardSnapshot = normalizeProfile(window.nostalgiaProfileGuardSnapshot?.() || {});
+    if (profileHasContent(guardSnapshot) && profileLooksWiped(candidate, guardSnapshot)) {
+      console.warn('PROFILE 화면 값이 보호 중인 초안보다 비어 있어 보호 초안을 저장합니다.');
+      return guardSnapshot;
+    }
 
     const profileWasEdited = window.nostalgiaProfileWasEdited?.() === true;
-    const suspiciouslyEmpty = profileHasContent(existing) && !profileHasContent(candidate);
-    const suspiciouslyShort = !profileWasEdited && existing.fields.length > candidate.fields.length;
-    const missingBio = !profileWasEdited && existing.bio.trim() && !candidate.bio.trim();
-
-    if (!profileWasEdited && (suspiciouslyEmpty || suspiciouslyShort || missingBio)) {
+    if (!profileWasEdited && profileLooksWiped(candidate, existing)) {
       console.warn('PROFILE 입력 UI가 비정상적으로 비어 있어 DB의 기존 profile_json을 보존합니다.');
       return existing;
     }
