@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#55564f" />
   <title>Character Home</title>
-  <link rel="stylesheet" href="css/site.css?v=20260818-6" />
-  <link rel="stylesheet" href="css/widget-layout-fix.css?v=20260818-6" />
+  <link rel="stylesheet" href="css/site.css?v=20260818-7" />
+  <link rel="stylesheet" href="css/widget-layout-fix.css?v=20260818-7" />
 </head>
 <body>
   <div id="entryOverlay" class="entry-overlay">
@@ -34,28 +34,34 @@
 
   <aside id="musicWidget" class="floating-widget music-widget" data-widget="music">
     <div class="widget-titlebar drag-handle">
-      <span>CHARACTER.exe</span>
+      <span>Nostalgia.exe</span>
       <button class="icon-button widget-minimize" type="button" aria-label="최소화">−</button>
     </div>
     <div class="widget-body">
       <div class="music-cover" id="musicCover"></div>
       <div class="music-meta">
         <span class="mini-label">NOW PLAYING</span>
-        <strong id="widgetTrackTitle">THEME TRACK</strong>
-        <span id="widgetTrackArtist">UNKNOWN</span>
+        <strong id="widgetTrackTitle">NO TRACK</strong>
+        <span id="widgetTrackArtist">—</span>
       </div>
-      <div class="player-row">
-        <button id="widgetPlayButton" class="key-button small" type="button">▶</button>
+      <div class="playlist-controls">
+        <button id="playlistPrevButton" class="playlist-control" type="button" title="이전 곡">‹</button>
+        <button id="widgetPlayButton" class="playlist-control" type="button" title="재생/일시정지">▶</button>
+        <button id="playlistNextButton" class="playlist-control" type="button" title="다음 곡">›</button>
+        <button id="playlistListButton" class="playlist-control playlist-list-button" type="button" title="재생목록">LIST</button>
+      </div>
+      <div class="playlist-progress-row">
         <input id="widgetProgress" type="range" min="0" max="1000" value="0" aria-label="재생 위치" />
       </div>
       <div class="player-row compact">
         <span id="widgetTime">00:00 / 00:00</span>
         <input id="widgetVolume" type="range" min="0" max="1" step="0.01" value="0.7" aria-label="음악 위젯 볼륨" />
       </div>
-      <div class="player-row compact">
+      <div class="player-row compact legacy-bgm-row">
         <button id="bgmToggle" class="text-button" type="button">BGM ON</button>
         <span id="bgmStatus" class="status-dot">●</span>
       </div>
+      <div id="playlistPanel" class="playlist-panel"></div>
     </div>
   </aside>
 
@@ -144,14 +150,14 @@
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=20260818-6"></script>
-  <script src="js/defaults.js?v=20260818-6"></script>
-  <script src="js/supabase-client.js?v=20260818-6"></script>
-  <script src="js/widget-layout-fix.js?v=20260818-6"></script>
-  <script src="js/site.js?v=20260818-6"></script>
-  <script src="js/site-background.js?v=20260818-6"></script>
-  <script src="js/site-playlist.js?v=20260818-6"></script>
-  <script src="js/entry-image-fix.js?v=20260818-6"></script>
-  <script src="js/keycap-row-layout.js?v=20260818-6"></script>
+  <script src="js/config.js?v=20260818-7"></script>
+  <script src="js/defaults.js?v=20260818-7"></script>
+  <script src="js/supabase-client.js?v=20260818-7"></script>
+  <script src="js/widget-layout-fix.js?v=20260818-7"></script>
+  <script src="js/site.js?v=20260818-7"></script>
+  <script src="js/site-background.js?v=20260818-7"></script>
+  <script src="js/site-playlist.js?v=20260818-7"></script>
+  <script src="js/entry-image-fix.js?v=20260818-7"></script>
+  <script src="js/keycap-row-layout.js?v=20260818-7"></script>
 </body>
 </html>
