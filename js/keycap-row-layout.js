@@ -1,6 +1,24 @@
 (function () {
   'use strict';
 
+  const LEGACY_DEFAULT_IMAGES = new Set([
+    'https://i.imgur.com/FcyxREc.png',
+    'https://i.imgur.com/GfHCsbM.png',
+    'https://i.imgur.com/ZawxGiT.png',
+    'https://i.imgur.com/VxCfK6k.png'
+  ]);
+
+  function clearLegacyImages(root) {
+    root.querySelectorAll('img').forEach(img => {
+      const src = String(img.getAttribute('src') || img.src || '').trim();
+      if (!LEGACY_DEFAULT_IMAGES.has(src)) return;
+      const keycap = img.closest('[data-key]');
+      const key = keycap?.getAttribute('data-key') || '';
+      img.remove();
+      if (keycap && !keycap.textContent.trim() && key) keycap.textContent = key;
+    });
+  }
+
   function apply(attempt = 0) {
     const widget = document.getElementById('keycapWidget');
     const mount = document.getElementById('keycapMount');
@@ -11,6 +29,8 @@
       return;
     }
 
+    clearLegacyImages(root);
+
     const addButton = root.querySelector('.add-keycap');
     const container = root.querySelector('.keycap-container');
     if (!container) {
@@ -20,7 +40,6 @@
 
     if (root.querySelector('#keycap-row-layout-style')) return;
 
-    /* Add all four keycaps immediately, then remove the old + control. */
     if (addButton) {
       for (let i = container.children.length; i < 4; i += 1) {
         if (addButton.disabled) break;
@@ -28,6 +47,8 @@
       }
       addButton.remove();
     }
+
+    clearLegacyImages(root);
 
     const style = document.createElement('style');
     style.id = 'keycap-row-layout-style';
@@ -70,7 +91,9 @@
     `;
     root.appendChild(style);
 
-    /* Keep the floating window compact while leaving enough room for four keys. */
+    const observer = new MutationObserver(() => clearLegacyImages(root));
+    observer.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['src'] });
+
     widget.style.width = '274px';
   }
 
