@@ -30,14 +30,26 @@
       label: $('.field-label', row)?.value || '',
       value: $('.field-value', row)?.value || ''
     })).filter(item => item.label.trim() || item.value.trim());
-    return { bio, fields };
+    return normalizeProfile({ bio, fields });
+  }
+
+  function syncSnapshotFromUi() {
+    if (restoring || !loaded) return;
+    snapshot = readUi();
   }
 
   function uiLooksWiped() {
-    if (!hasSnapshotContent() || edited) return false;
+    if (!hasSnapshotContent()) return false;
     const current = readUi();
     if (snapshot.bio.trim() && !current.bio.trim()) return true;
-    if (snapshot.fields.length && current.fields.length < snapshot.fields.length) return true;
+    if (snapshot.fields.length > current.fields.length) return true;
+
+    for (let i = 0; i < snapshot.fields.length; i += 1) {
+      const wanted = snapshot.fields[i] || { label: '', value: '' };
+      const now = current.fields[i] || { label: '', value: '' };
+      if (wanted.label.trim() && !now.label.trim()) return true;
+      if (wanted.value.trim() && !now.value.trim()) return true;
+    }
     return false;
   }
 
@@ -66,6 +78,7 @@
     [label, value].forEach(el => el.addEventListener('input', event => {
       if (restoring || !event.isTrusted) return;
       edited = true;
+      snapshot = readUi();
       const status = $('#saveStatus');
       if (status) status.textContent = '저장 필요';
     }));
@@ -73,6 +86,7 @@
       if (!event.isTrusted) return;
       edited = true;
       row.remove();
+      snapshot = readUi();
       const status = $('#saveStatus');
       if (status) status.textContent = '저장 필요';
     });
@@ -82,7 +96,7 @@
   }
 
   function restoreUi() {
-    if (!loaded || edited || !uiLooksWiped()) return;
+    if (!loaded || restoring || !uiLooksWiped()) return;
     const bio = $('#profileBioInput');
     const editor = $('#profileFieldsEditor');
     if (!bio || !editor) return;
@@ -94,9 +108,7 @@
     if (!snapshot.fields.length) editor.appendChild(makeRow({ label: '', value: '' }));
     restoring = false;
 
-    const status = $('#saveStatus');
-    if (status && status.textContent === '저장 필요') status.textContent = '준비됨';
-    console.info('PROFILE 입력값이 DB 기준으로 복구되었습니다.');
+    console.info('PROFILE 입력값이 보호된 초안 기준으로 복구되었습니다.');
   }
 
   async function loadSnapshot() {
@@ -125,16 +137,20 @@
 
     panel.addEventListener('input', event => {
       if (restoring || !event.isTrusted) return;
-      if (event.target.matches('#profileBioInput,.field-label,.field-value')) edited = true;
+      if (!event.target.matches('#profileBioInput,.field-label,.field-value')) return;
+      edited = true;
+      snapshot = readUi();
     }, true);
 
     panel.addEventListener('click', event => {
       if (!event.isTrusted) return;
-      if (event.target.closest('#addProfileField,.remove-button')) edited = true;
+      if (!event.target.closest('#addProfileField,.remove-button')) return;
+      edited = true;
+      setTimeout(() => { if (!restoring) snapshot = readUi(); }, 0);
     }, true);
 
     document.querySelector('#adminNav [data-tab="profile"]')?.addEventListener('click', () => {
-      if (!edited) setTimeout(restoreUi, 100);
+      setTimeout(restoreUi, 100);
     });
   }
 
@@ -144,16 +160,14 @@
     if (!editor || !bio) return;
 
     const observer = new MutationObserver(() => {
-      if (!restoring && !edited) setTimeout(restoreUi, 0);
+      if (!restoring) setTimeout(restoreUi, 0);
     });
     observer.observe(editor, { childList: true, subtree: true });
 
     const app = $('#adminApp');
     if (app) {
       const appObserver = new MutationObserver(() => {
-        if (!app.classList.contains('hidden') && loaded && !edited) {
-          setTimeout(restoreUi, 120);
-        }
+        if (!app.classList.contains('hidden') && loaded) setTimeout(restoreUi, 120);
       });
       appObserver.observe(app, { attributes: true, attributeFilter: ['class'] });
     }
@@ -161,7 +175,7 @@
     clearInterval(pollTimer);
     pollTimer = setInterval(() => {
       const appVisible = app && !app.classList.contains('hidden');
-      if (appVisible && loaded && !edited && !restoring) restoreUi();
+      if (appVisible && loaded && !restoring) restoreUi();
     }, 900);
   }
 
@@ -186,6 +200,7 @@
     edited = false;
     setTimeout(restoreUi, 50);
   };
+  window.nostalgiaProfileSyncDraft = syncSnapshotFromUi;
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
   else init();
