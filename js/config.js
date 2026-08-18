@@ -1,12 +1,11 @@
 /*
-  1) Supabase 프로젝트를 만든 뒤 아래 세 값만 채우세요.
-  2) adminEmail은 Supabase Auth에 만든 관리자 계정 이메일입니다.
-  3) 브라우저용 publishable/anon key만 사용하세요. service_role 키는 절대 넣지 마세요.
+  Supabase connection for the character site.
+  Browser-safe publishable/anon key only. Never place a service_role key here.
 */
 window.APP_CONFIG = {
-  supabaseUrl: 'https://YOUR_PROJECT.supabase.co',
-  supabaseAnonKey: 'YOUR_PUBLISHABLE_OR_ANON_KEY',
-  adminEmail: 'YOUR_ADMIN_EMAIL@example.com',
+  supabaseUrl: 'https://tqqvyjjymessnotrlhhy.supabase.co',
+  supabaseAnonKey: 'sb_publishable_vRsH1U89LQ43_FBGylgvPw_vk-JBq1u',
+  adminEmail: 'elienoar29@gmail.com',
   siteId: 1,
   storageBucket: 'site-media'
 };
