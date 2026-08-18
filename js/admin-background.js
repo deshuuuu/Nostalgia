@@ -108,7 +108,7 @@
       <label>방향 <span id="backgroundGradientAngleLabel"></span>
         <input id="backgroundGradientAngleInput" type="range" min="0" max="360" step="1">
       </label>
-      <p class="muted" style="margin-bottom:0">그라데이션 OFF면 ‘배경 컬러’ 한 색만 그대로 사용합니다. ON이면 시작색/끝색만 사용하며 고정 회색은 섞지 않습니다.</p>`;
+      <p class="muted" style="margin-bottom:0">그라데이션 OFF면 ‘배경 컬러’ 한 색만 그대로 사용합니다. ON이면 시작색/끝색만 사용하며 첫 화면에도 똑같이 적용됩니다.</p>`;
 
     const anchor = bgInput.closest('label');
     anchor?.after(box);
@@ -145,7 +145,6 @@
       scheduleSave();
     });
 
-    /* Background color and gradient settings are persisted together to avoid save races. */
     bgInput.addEventListener('input', () => {
       current.base = normalizeHex(bgInput.value, current.base);
       current.start = current.base;
@@ -156,6 +155,12 @@
       }
       updatePreview();
       scheduleSave();
+    });
+
+    /* admin.js keeps its own settings snapshot. A full save can otherwise write an older
+       background object back to the row, so persist our current block again afterward. */
+    document.getElementById('saveAllButton')?.addEventListener('click', () => {
+      setTimeout(() => persist().catch(handleError), 850);
     });
   }
 
