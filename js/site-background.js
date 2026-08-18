@@ -24,6 +24,14 @@
     }
   }
 
+  function applyLayer(el, enabled, base, start, end, angle) {
+    if (!el) return;
+    el.style.backgroundColor = base;
+    el.style.backgroundImage = enabled
+      ? `linear-gradient(${angle}deg, ${start}, ${end})`
+      : 'none';
+  }
+
   function applyBackground(settings) {
     const base = normalizeHex(settings.background_color, '#55564f');
     const start = normalizeHex(settings.background_gradient_start, base);
@@ -38,11 +46,13 @@
     document.documentElement.style.setProperty('--bg-gradient-end', end);
     document.documentElement.style.setProperty('--bg-gradient-angle', `${angle}deg`);
 
-    document.body.style.backgroundColor = base;
-    document.body.style.backgroundImage = enabled
-      ? `linear-gradient(${angle}deg, ${start}, ${end})`
-      : 'none';
+    applyLayer(document.body, enabled, base, start, end, angle);
     document.body.style.backgroundAttachment = enabled ? 'fixed' : 'scroll';
+
+    /* The intro overlay used to have its own hard-coded gray gradient.
+       Keep it in sync with the public site background settings. */
+    const entry = document.getElementById('entryOverlay');
+    applyLayer(entry, enabled, base, start, end, angle);
   }
 
   async function boot() {
