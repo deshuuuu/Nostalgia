@@ -4,6 +4,15 @@
   const cfg = window.APP_CONFIG || {};
   let lastSettings = null;
 
+  function ensureStarfieldStyles() {
+    if (document.querySelector('link[data-nostalgia-starfield]')) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'css/starfield.css?v=20260818-12';
+    link.dataset.nostalgiaStarfield = '1';
+    document.head.appendChild(link);
+  }
+
   function normalizeHex(value, fallback) {
     const v = String(value || '').trim();
     return /^#[0-9a-f]{6}$/i.test(v) ? v : fallback;
@@ -59,21 +68,18 @@
     setBackground(document.body, base, image);
     document.body.style.setProperty('background-attachment', enabled ? 'fixed' : 'scroll', 'important');
 
-    // The entry overlay previously had its own fixed gray gradient.
-    // Force it to use the exact same color/gradient as the public page.
-    setBackground(document.getElementById('entryOverlay'), base, image);
+    const entry = document.getElementById('entryOverlay');
+    setBackground(entry, base, image);
 
-    // Also keep the intro card base in sync. The uploaded image can still sit above it.
     const entryVisual = document.querySelector('.entry-visual');
     if (entryVisual) entryVisual.style.setProperty('background-color', base, 'important');
   }
 
   async function boot() {
+    ensureStarfieldStyles();
     const settings = await fetchSettings();
     applyBackground(settings);
 
-    // Re-apply after the other site scripts finish rendering so no later shorthand
-    // background declaration can replace the selected gradient.
     setTimeout(() => applyBackground(lastSettings || settings), 450);
     setTimeout(() => applyBackground(lastSettings || settings), 1400);
   }
@@ -89,6 +95,7 @@
   }
 
   window.addEventListener('pageshow', () => {
+    ensureStarfieldStyles();
     if (lastSettings) setTimeout(() => applyBackground(lastSettings), 50);
   });
 })();
