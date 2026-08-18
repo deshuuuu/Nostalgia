@@ -24,21 +24,19 @@
     function requestSave(delay = 250) {
       clearTimeout(saveTimer);
       saveTimer = setTimeout(() => {
-        if (!saveButton.disabled) {
-          saveButton.click();
-        } else {
-          requestSave(350);
-        }
+        if (!saveButton.disabled) saveButton.click();
+        else requestSave(350);
       }, delay);
     }
 
+    /* Background color is intentionally excluded here.
+       admin-background.js owns base + gradient saving as one atomic setting block. */
     const autoSaveIds = [
       'entryKickerInput',
       'entryNoteInput',
       'siteTitleInput',
       'enterLabelInput',
-      'accentColorInput',
-      'backgroundColorInput'
+      'accentColorInput'
     ];
 
     autoSaveIds.forEach(id => {
@@ -116,12 +114,7 @@
         #visualKeycapDesigner .kc-note{margin-top:18px;padding:12px 14px;border-left:2px solid var(--accent,#d9d0a4);background:rgba(255,255,255,.025);color:#b9b5a6;font-size:11px;line-height:1.7}
         @media(max-width:850px){#visualKeycapDesigner .kc-grid{grid-template-columns:1fr}}
       </style>
-      <div class="kc-head">
-        <div>
-          <h3 style="margin:0">키캡 클리커 설정</h3>
-          <p class="muted">공개 위젯의 + 버튼을 누르면 Z → X → C → V 순서로 키캡이 추가됩니다.</p>
-        </div>
-      </div>
+      <div class="kc-head"><div><h3 style="margin:0">키캡 클리커 설정</h3><p class="muted">Z / X / C / V 네 키캡이 공개 위젯에 한 줄로 표시됩니다.</p></div></div>
       <div class="kc-grid" id="visualKeycapGrid"></div>
       <div class="kc-note">각 키캡의 이미지는 직접 업로드할 수 있고, 아래쪽 입체 그림자 색은 컬러 피커로 바꿀 수 있습니다. 사운드는 키별로 따로 업로드됩니다. 변경 내용은 자동 저장됩니다.</div>`;
     grid.prepend(designer);
@@ -136,29 +129,18 @@
       try {
         const parsed = JSON.parse(decodeURIComponent(match[1]));
         const merged = cloneDefaultConfig();
-        KEY_ORDER.forEach(key => {
-          if (parsed?.[key]) merged[key] = { ...merged[key], ...parsed[key] };
-        });
+        KEY_ORDER.forEach(key => { if (parsed?.[key]) merged[key] = { ...merged[key], ...parsed[key] }; });
         return merged;
-      } catch (_) {
-        return cloneDefaultConfig();
-      }
+      } catch (_) { return cloneDefaultConfig(); }
     }
 
-    function serializeConfig() {
-      return encodeURIComponent(JSON.stringify(config));
-    }
-
+    function serializeConfig() { return encodeURIComponent(JSON.stringify(config)); }
     function syncEditor({ save = true } = {}) {
       textarea.value = `<div data-keycap-config="${serializeConfig()}"></div>`;
       textarea.dispatchEvent(new Event('input', { bubbles: true }));
       if (save) requestSave(140);
     }
-
-    function publicUrl(path) {
-      if (!path) return '';
-      return window.publicUrlForPath ? window.publicUrlForPath(path) : path;
-    }
+    function publicUrl(path) { return path ? (window.publicUrlForPath ? window.publicUrlForPath(path) : path) : ''; }
 
     async function uploadKeycapImage(file, key) {
       if (!file || !window.db) return;
@@ -166,11 +148,7 @@
       const ext = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '') || 'png';
       const path = `keycap/images/${key.toLowerCase()}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
       setDesignerStatus(`키캡 ${key} 이미지 업로드 중…`);
-      const { error } = await window.db.storage.from(cfg.storageBucket || 'site-media').upload(path, file, {
-        cacheControl: '3600',
-        upsert: false,
-        contentType: file.type || undefined
-      });
+      const { error } = await window.db.storage.from(cfg.storageBucket || 'site-media').upload(path, file, { cacheControl: '3600', upsert: false, contentType: file.type || undefined });
       if (error) throw error;
       config[key].image = path;
       renderDesigner();
@@ -178,17 +156,8 @@
       showToast(`${key} 키캡 이미지 업로드 완료. 자동 저장 중…`, 'success');
     }
 
-    function setDesignerStatus(text) {
-      const saveStatus = document.getElementById('saveStatus');
-      if (saveStatus) saveStatus.textContent = text;
-    }
-
-    function showToast(message, type) {
-      toast.textContent = message;
-      toast.className = `toast show ${type || ''}`;
-      setTimeout(() => { toast.className = 'toast'; }, 2200);
-    }
-
+    function setDesignerStatus(text) { const saveStatus = document.getElementById('saveStatus'); if (saveStatus) saveStatus.textContent = text; }
+    function showToast(message, type) { toast.textContent = message; toast.className = `toast show ${type || ''}`; setTimeout(() => { toast.className = 'toast'; }, 2200); }
     function soundIsUploaded(key) {
       if (keycapSoundState[key] === true) return true;
       const status = document.getElementById('keycapAudioStatus')?.textContent || '';
@@ -199,126 +168,60 @@
       const root = document.getElementById('visualKeycapGrid');
       if (!root) return;
       root.innerHTML = '';
-
       KEY_ORDER.forEach(key => {
         const item = config[key] || { image: '', shadow: '#A660A7' };
-        const card = document.createElement('div');
-        card.className = 'kc-card';
-
-        const preview = document.createElement('div');
-        preview.className = 'kc-preview';
-        preview.style.setProperty('--kc-shadow', item.shadow || '#A660A7');
+        const card = document.createElement('div'); card.className = 'kc-card';
+        const preview = document.createElement('div'); preview.className = 'kc-preview'; preview.style.setProperty('--kc-shadow', item.shadow || '#A660A7');
         const url = publicUrl(item.image);
-        if (url) {
-          const img = document.createElement('img');
-          img.src = url;
-          img.alt = `${key} 키캡 미리보기`;
-          img.onerror = () => { preview.innerHTML = `<span>${key}</span>`; };
-          preview.appendChild(img);
-        } else {
-          preview.innerHTML = `<span>${key}</span>`;
-        }
+        if (url) { const img = document.createElement('img'); img.src = url; img.alt = `${key} 키캡 미리보기`; img.onerror = () => { preview.innerHTML = `<span>${key}</span>`; }; preview.appendChild(img); }
+        else preview.innerHTML = `<span>${key}</span>`;
 
-        const fields = document.createElement('div');
-        fields.className = 'kc-fields';
-        fields.innerHTML = `
-          <div class="kc-title"><strong>${key}</strong><span class="kc-status" data-sound-status="${key}">${soundIsUploaded(key) ? '사운드 등록됨' : '사운드 미설정'}</span></div>
-          <label class="kc-file">키캡 이미지<input type="file" accept="image/*" data-image-key="${key}"></label>
-          <label class="kc-file">키캡 사운드<button type="button" class="secondary-button" data-sound-key="${key}">사운드 파일 선택</button></label>
-          <label class="kc-color"><span>아래 그림자 색</span><input type="color" data-color-key="${key}" value="${/^#[0-9a-f]{6}$/i.test(item.shadow || '') ? item.shadow : '#A660A7'}"></label>`;
-
-        card.append(preview, fields);
-        root.appendChild(card);
+        const fields = document.createElement('div'); fields.className = 'kc-fields';
+        fields.innerHTML = `<div class="kc-title"><strong>${key}</strong><span class="kc-status" data-sound-status="${key}">${soundIsUploaded(key) ? '사운드 등록됨' : '사운드 미설정'}</span></div><label class="kc-file">키캡 이미지<input type="file" accept="image/*" data-image-key="${key}"></label><label class="kc-file">키캡 사운드<button type="button" class="secondary-button" data-sound-key="${key}">사운드 파일 선택</button></label><label class="kc-color"><span>아래 그림자 색</span><input type="color" data-color-key="${key}" value="${/^#[0-9a-f]{6}$/i.test(item.shadow || '') ? item.shadow : '#A660A7'}"></label>`;
+        card.append(preview, fields); root.appendChild(card);
       });
 
-      root.querySelectorAll('[data-image-key]').forEach(input => {
-        input.addEventListener('change', async () => {
-          const file = input.files?.[0];
-          if (!file) return;
-          const key = input.dataset.imageKey;
-          try {
-            await uploadKeycapImage(file, key);
-          } catch (error) {
-            console.error(error);
-            showToast(error?.message || '키캡 이미지 업로드에 실패했습니다.', 'error');
-          } finally {
-            input.value = '';
-          }
-        });
-      });
-
-      root.querySelectorAll('[data-sound-key]').forEach(button => {
-        button.addEventListener('click', () => {
-          const key = button.dataset.soundKey;
-          const originalInput = document.querySelector(`.keycap-audio-file[data-key="${key}"]`);
-          if (originalInput) originalInput.click();
-        });
-      });
-
+      root.querySelectorAll('[data-image-key]').forEach(input => input.addEventListener('change', async () => {
+        const file = input.files?.[0]; if (!file) return; const key = input.dataset.imageKey;
+        try { await uploadKeycapImage(file, key); }
+        catch (error) { console.error(error); showToast(error?.message || '키캡 이미지 업로드에 실패했습니다.', 'error'); }
+        finally { input.value = ''; }
+      }));
+      root.querySelectorAll('[data-sound-key]').forEach(button => button.addEventListener('click', () => {
+        const originalInput = document.querySelector(`.keycap-audio-file[data-key="${button.dataset.soundKey}"]`); if (originalInput) originalInput.click();
+      }));
       root.querySelectorAll('[data-color-key]').forEach(input => {
-        input.addEventListener('input', () => {
-          const key = input.dataset.colorKey;
-          config[key].shadow = input.value;
-          const card = input.closest('.kc-card');
-          card?.querySelector('.kc-preview')?.style.setProperty('--kc-shadow', input.value);
-        });
-        input.addEventListener('change', () => {
-          const key = input.dataset.colorKey;
-          config[key].shadow = input.value;
-          syncEditor({ save: true });
-        });
+        input.addEventListener('input', () => { const key = input.dataset.colorKey; config[key].shadow = input.value; input.closest('.kc-card')?.querySelector('.kc-preview')?.style.setProperty('--kc-shadow', input.value); });
+        input.addEventListener('change', () => { config[input.dataset.colorKey].shadow = input.value; syncEditor({ save: true }); });
       });
     }
 
     function initializeFromEditor() {
       if (!textarea.value) return;
-      config = parseConfigFromEditor();
-      renderDesigner();
-      if (!/data-keycap-config=/i.test(textarea.value)) {
-        syncEditor({ save: true });
-      }
+      config = parseConfigFromEditor(); renderDesigner();
+      if (!/data-keycap-config=/i.test(textarea.value)) syncEditor({ save: true });
       initializedFromEditor = true;
     }
 
-    window.updateKeycapSoundLabels = function updateKeycapSoundLabelsGlobal() {
-      KEY_ORDER.forEach(key => {
-        const el = document.querySelector(`[data-sound-status="${key}"]`);
-        if (el) el.textContent = soundIsUploaded(key) ? '사운드 등록됨' : '사운드 미설정';
-      });
+    window.updateKeycapSoundLabels = function () {
+      KEY_ORDER.forEach(key => { const el = document.querySelector(`[data-sound-status="${key}"]`); if (el) el.textContent = soundIsUploaded(key) ? '사운드 등록됨' : '사운드 미설정'; });
     };
 
     const adminApp = document.getElementById('adminApp');
     const appObserver = new MutationObserver(() => {
-      if (!adminApp.classList.contains('hidden')) {
-        setTimeout(() => {
-          initializeFromEditor();
-          window.updateKeycapSoundLabels?.();
-        }, 160);
-      }
+      if (!adminApp.classList.contains('hidden')) setTimeout(() => { initializeFromEditor(); window.updateKeycapSoundLabels?.(); }, 160);
     });
     appObserver.observe(adminApp, { attributes: true, attributeFilter: ['class'] });
-
-    document.querySelector('#adminNav [data-tab="clicker"]')?.addEventListener('click', () => {
-      setTimeout(() => {
-        if (!initializedFromEditor) initializeFromEditor();
-        else {
-          config = parseConfigFromEditor();
-          renderDesigner();
-        }
-        window.updateKeycapSoundLabels?.();
-      }, 80);
-    });
+    document.querySelector('#adminNav [data-tab="clicker"]')?.addEventListener('click', () => setTimeout(() => {
+      if (!initializedFromEditor) initializeFromEditor(); else { config = parseConfigFromEditor(); renderDesigner(); }
+      window.updateKeycapSoundLabels?.();
+    }, 80));
 
     renderDesigner();
   }
 
-  function updateKeycapSoundLabels() {
-    window.updateKeycapSoundLabels?.();
-  }
+  function updateKeycapSoundLabels() { window.updateKeycapSoundLabels?.(); }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => setTimeout(boot, 0), { once: true });
-  } else {
-    setTimeout(boot, 0);
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(boot, 0), { once: true });
+  else setTimeout(boot, 0);
 })();
