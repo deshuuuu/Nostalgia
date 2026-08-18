@@ -33,6 +33,11 @@
     return /^#[0-9a-f]{6}$/i.test(v) ? v : fallback;
   }
 
+  function valueOrLatest(selector, latestValue, fallback = '') {
+    const input = $(selector);
+    return input ? input.value : (latestValue ?? fallback);
+  }
+
   function rememberUpload(path) {
     const p = String(path || '');
     if (!p) return;
@@ -92,7 +97,10 @@
       entry_kicker: $('#entryKickerInput')?.value.trim() || latestSettings.entry_kicker || 'A MEMORY, KEPT QUIETLY.',
       entry_note: $('#entryNoteInput')?.value.trim() || latestSettings.entry_note || '브라우저 정책상 ENTER 이후 음악이 재생됩니다. (AI 제작 음악)',
       accent_color: normalizeHex($('#accentColorInput')?.value, latestSettings.accent_color || '#d9d0a4'),
-      background_color: normalizeHex($('#backgroundColorInput')?.value, latestSettings.background_color || '#55564f')
+      background_color: normalizeHex($('#backgroundColorInput')?.value, latestSettings.background_color || '#55564f'),
+      home_eyebrow: valueOrLatest('#homeEyebrowInput', latestSettings.home_eyebrow, 'WELCOME TO THE ARCHIVE'),
+      footer_archive_text: valueOrLatest('#footerArchiveInput', latestSettings.footer_archive_text, ''),
+      story_password: valueOrLatest('#storyPasswordInput', latestSettings.story_password, '')
     };
 
     Object.assign(patch, pendingMedia);
@@ -121,10 +129,15 @@
   function collectStory(existingStory) {
     const rows = $$('.story-row');
     if (!rows.length) return Array.isArray(existingStory) ? existingStory : [];
-    return rows.map(row => ({
-      title: $('.story-title', row)?.value.trim() || '',
-      body: $('.story-body', row)?.value || ''
-    })).filter(item => item.title || item.body);
+    const old = Array.isArray(existingStory) ? existingStory : [];
+    return rows.map((row, index) => {
+      const lockInput = $('.story-locked', row);
+      return {
+        title: $('.story-title', row)?.value.trim() || '',
+        body: $('.story-body', row)?.value || '',
+        locked: lockInput ? lockInput.checked : Boolean(old[index]?.locked)
+      };
+    }).filter(item => item.title || item.body);
   }
 
   async function safeSave() {
@@ -135,6 +148,7 @@
     status('안전 저장 중…');
 
     try {
+      window.nostalgiaAuthorizeAdminWrite?.(120000);
       const { data: latest, error: readError } = await window.db
         .from('site_content')
         .select('*')
