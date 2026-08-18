@@ -5,6 +5,7 @@
   let initialized = false;
   let saveTimer = null;
   let current = {
+    base: '#55564f',
     enabled: false,
     start: '#55564f',
     end: '#55564f',
@@ -30,6 +31,7 @@
     const settings = await fetchSettings();
     const merged = {
       ...settings,
+      background_color: current.base,
       background_gradient_enabled: current.enabled,
       background_gradient_start: current.start,
       background_gradient_end: current.end,
@@ -71,7 +73,7 @@
     if (preview) {
       preview.style.background = current.enabled
         ? `linear-gradient(${current.angle}deg, ${current.start}, ${current.end})`
-        : current.start;
+        : current.base;
       preview.style.opacity = '1';
     }
     if (angleInput) angleInput.disabled = !current.enabled;
@@ -82,12 +84,13 @@
     const bgInput = document.getElementById('backgroundColorInput');
     if (!panel || !bgInput || document.getElementById('backgroundGradientControls')) return;
 
-    const base = normalizeHex(settings.background_color, '#55564f');
+    current.base = normalizeHex(settings.background_color, '#55564f');
     current.enabled = settings.background_gradient_enabled === true;
-    current.start = normalizeHex(settings.background_gradient_start, base);
+    current.start = normalizeHex(settings.background_gradient_start, current.base);
     current.end = normalizeHex(settings.background_gradient_end, current.start);
     const angle = Number(settings.background_gradient_angle ?? 180);
     current.angle = Number.isFinite(angle) ? Math.max(0, Math.min(360, angle)) : 180;
+    bgInput.value = current.base;
 
     const box = document.createElement('div');
     box.id = 'backgroundGradientControls';
@@ -142,13 +145,15 @@
       scheduleSave();
     });
 
-    /* Changing the main background color should always produce a visible change.
-       When gradient is on, use the new base as the gradient start; the user can then fine-tune it separately. */
+    /* Background color and gradient settings are persisted together to avoid save races. */
     bgInput.addEventListener('input', () => {
-      current.start = normalizeHex(bgInput.value, current.start);
+      current.base = normalizeHex(bgInput.value, current.base);
+      current.start = current.base;
       start.value = current.start;
-      if (!current.enabled) current.end = current.start;
-      if (!current.enabled) end.value = current.end;
+      if (!current.enabled) {
+        current.end = current.base;
+        end.value = current.end;
+      }
       updatePreview();
       scheduleSave();
     });
