@@ -1,0 +1,44 @@
+/* Gallery alignment: use a predictable row-based grid instead of CSS columns. */
+.gallery-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 16px !important;
+  columns: initial !important;
+  column-gap: initial !important;
+  align-items: start;
+}
+
+.gallery-item {
+  width: 100% !important;
+  margin: 0 !important;
+  break-inside: initial !important;
+  padding: 5px !important;
+  align-self: start;
+}
+
+.gallery-item img {
+  display: block;
+  width: 100% !important;
+  aspect-ratio: 4 / 5;
+  height: auto !important;
+  object-fit: cover;
+  object-position: center;
+  filter: none !important;
+}
+
+.gallery-item figcaption:empty {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .gallery-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .gallery-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+}
