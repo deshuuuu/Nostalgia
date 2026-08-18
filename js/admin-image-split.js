@@ -47,6 +47,14 @@
     return path;
   }
 
+  async function removeStoragePath(path) {
+    if (!path || /^https?:\/\//i.test(path) || path.startsWith('assets/')) return;
+    const { error } = await window.db.storage
+      .from(cfg.storageBucket || 'site-media')
+      .remove([path]);
+    if (error) console.warn('이전 이미지 파일 정리 실패:', error);
+  }
+
   async function mergeAndSaveSplitSettings() {
     if (!window.SUPABASE_CONFIGURED || !window.db) return;
     const { data, error: readError } = await window.db
@@ -57,8 +65,8 @@
     if (readError) throw readError;
 
     const settings = { ...(data?.settings_json || {}) };
-    if (currentHomePath) settings.home_image_url = currentHomePath;
-    if (currentProfilePath) settings.profile_image_url = currentProfilePath;
+    settings.home_image_url = currentHomePath || '';
+    settings.profile_image_url = currentProfilePath || '';
 
     const { error } = await window.db
       .from('site_content')
@@ -75,6 +83,7 @@
     input.addEventListener('change', async () => {
       const file = input.files?.[0];
       if (!file) return;
+      const oldPath = key === 'home_image_url' ? currentHomePath : currentProfilePath;
       try {
         setStatus('이미지 업로드 중…');
         const path = await uploadFile(file, folder);
@@ -82,9 +91,12 @@
         if (key === 'profile_image_url') currentProfilePath = path;
         await mergeAndSaveSplitSettings();
         setPreview(previewId, path);
+        await removeStoragePath(oldPath && oldPath !== path ? oldPath : '');
         setStatus('저장됨');
       } catch (error) {
         console.error(error);
+        if (key === 'home_image_url') currentHomePath = oldPath;
+        if (key === 'profile_image_url') currentProfilePath = oldPath;
         setStatus('업로드 실패');
         alert(`이미지 업로드에 실패했습니다.\n${error.message || error}`);
       } finally {
@@ -98,10 +110,20 @@
     if (!button || button.dataset.splitImageProtected === '1') return;
     button.dataset.splitImageProtected = '1';
     button.addEventListener('click', () => {
-      if (!currentHomePath && !currentProfilePath) return;
       setTimeout(() => mergeAndSaveSplitSettings().catch(console.warn), 900);
       setTimeout(() => mergeAndSaveSplitSettings().catch(console.warn), 1800);
     }, true);
+  }
+
+  function removeSharedImageUi() {
+    const oldInput = document.getElementById('characterImageFile');
+    const oldLabel = oldInput?.closest('label');
+    if (oldLabel) oldLabel.remove();
+    const oldPreview = document.getElementById('characterImagePreview');
+    if (oldPreview) oldPreview.remove();
+
+    const hint = document.querySelector('[data-tab-panel="character"] .hint-card p');
+    if (hint) hint.textContent = 'HOME 대표 이미지와 PROFILE 이미지는 각각 따로 업로드하고 관리합니다.';
   }
 
   function buildUi() {
@@ -109,24 +131,11 @@
     const profilePanel = document.querySelector('[data-tab-panel="profile"] .admin-card');
     if (!characterPanel || !profilePanel) return false;
 
-    const oldInput = document.getElementById('characterImageFile');
-    if (oldInput) {
-      const label = oldInput.closest('label');
-      if (label && !label.dataset.relabelled) {
-        label.dataset.relabelled = '1';
-        for (const node of label.childNodes) {
-          if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
-            node.textContent = '기본 공통 이미지';
-            break;
-          }
-        }
-      }
-    }
+    removeSharedImageUi();
 
     if (!document.getElementById('homeImageFile')) {
       const block = makeUploadBlock('homeImageFile', 'HOME 대표 이미지', 'homeImagePreview');
-      const basePreview = document.getElementById('characterImagePreview');
-      (basePreview?.parentNode || characterPanel).insertBefore(block, basePreview?.nextSibling || null);
+      characterPanel.append(block);
     }
 
     if (!document.getElementById('profileImageFile')) {
