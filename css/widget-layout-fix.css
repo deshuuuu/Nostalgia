@@ -1,26 +1,22 @@
 /* Floating widget placement fix: keep widgets clear of the top navigation. */
 .music-widget {
-  top: 112px !important;
+  top: 112px;
   left: 22px;
 }
 
 .keycap-widget {
-  top: 112px !important;
+  top: 112px;
   right: 22px;
 }
 
-/* Once a widget has been dragged, site.js sets an inline left/top value.
-   The !important top above intentionally establishes the new safe default,
-   while widget-layout-fix.js removes the previous saved position once. */
-
 @media (max-width: 900px) {
   .music-widget {
-    top: 108px !important;
+    top: 108px;
     left: 12px;
   }
 
   .keycap-widget {
-    top: 108px !important;
+    top: 108px;
     right: 12px;
   }
 }
@@ -28,13 +24,13 @@
 @media (max-width: 640px) {
   /* The header can wrap on narrow screens, so keep both widgets well below it. */
   .music-widget {
-    top: 136px !important;
+    top: 136px;
     left: 8px;
     right: auto;
   }
 
   .keycap-widget {
-    top: 350px !important;
+    top: 350px;
     right: 8px;
     left: auto;
   }
