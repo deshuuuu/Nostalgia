@@ -47,7 +47,8 @@
     box.innerHTML = `
       <h3 style="margin:0 0 10px">스토리 잠금</h3>
       <label>잠금 챕터 비밀번호<input id="storyPasswordInput" type="text" autocomplete="off" placeholder="비밀번호 입력"></label>
-      <p class="muted" style="margin-bottom:0">아래에서 ‘비밀번호 필요’를 체크한 챕터만 이 비밀번호를 입력해야 본문이 보입니다.</p>`;
+      <p class="muted">아래에서 ‘비밀번호 필요’를 체크한 챕터만 이 비밀번호를 입력해야 본문이 보입니다.</p>
+      <p class="muted" style="margin-bottom:0">본문 서식: <code>*기울임*</code> / <code>**굵게**</code></p>`;
     card.insertBefore(box, card.firstChild);
 
     const input = document.getElementById('storyPasswordInput');
