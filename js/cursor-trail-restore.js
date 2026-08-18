@@ -4,9 +4,6 @@
   if (matchMedia('(pointer: coarse)').matches) return;
 
   const cfg = window.APP_CONFIG || {};
-  const layer = document.getElementById('trailLayer');
-  if (!layer) return;
-
   let trailSettings = {
     trail_style: 'sparkle',
     trail_spacing: 12,
@@ -15,6 +12,42 @@
     trail_image_url: ''
   };
   let last = { x: -9999, y: -9999 };
+
+  function ensureFxLayer() {
+    let layer = document.getElementById('nostalgiaCursorFxLayer');
+    if (layer) return layer;
+
+    layer = document.createElement('div');
+    layer.id = 'nostalgiaCursorFxLayer';
+    layer.setAttribute('aria-hidden', 'true');
+    layer.style.cssText = [
+      'position:fixed',
+      'inset:0',
+      'width:100vw',
+      'height:100vh',
+      'pointer-events:none',
+      'overflow:hidden',
+      'z-index:2147483000',
+      'display:block',
+      'visibility:visible',
+      'opacity:1'
+    ].join(';');
+    document.body.appendChild(layer);
+    return layer;
+  }
+
+  function installStyle() {
+    if (document.getElementById('cursorRuntimeStyle')) return;
+    const style = document.createElement('style');
+    style.id = 'cursorRuntimeStyle';
+    style.textContent = `
+      #nostalgiaCursorFxLayer { display:block !important; visibility:visible !important; opacity:1 !important; }
+      #nostalgiaCursorFxLayer .cursor-trail,
+      #nostalgiaCursorFxLayer .click-particle { position:fixed !important; pointer-events:none !important; }
+      #customCursor { z-index:2147483001 !important; }
+    `;
+    document.head.appendChild(style);
+  }
 
   function clamp(value, min, max, fallback) {
     const n = Number(value);
@@ -40,30 +73,21 @@
     }
   }
 
-  function existingTrailAt(x, y) {
-    const newest = layer.lastElementChild;
-    if (!newest?.classList?.contains('cursor-trail')) return false;
-    const left = parseFloat(newest.style.left);
-    const top = parseFloat(newest.style.top);
-    return Number.isFinite(left) && Number.isFinite(top) && Math.abs(left - x) < 1.5 && Math.abs(top - y) < 1.5;
-  }
-
   function createTrail(x, y) {
+    const layer = ensureFxLayer();
     const spacing = clamp(trailSettings.trail_spacing, 2, 80, 12);
     if (Math.hypot(x - last.x, y - last.y) < spacing) return;
     last = { x, y };
 
-    // site.js runs its pointermove listener first. If it already produced a trail,
-    // do not add another one. This module only restores a missing trail.
-    if (existingTrailAt(x, y)) return;
-
     const el = document.createElement('span');
-    const style = ['sparkle', 'dot', 'glow', 'star', 'image'].includes(trailSettings.trail_style)
+    let style = ['sparkle', 'dot', 'glow', 'star', 'image'].includes(trailSettings.trail_style)
       ? trailSettings.trail_style
       : 'sparkle';
     const size = clamp(trailSettings.trail_size, 2, 80, 13);
 
-    el.className = `cursor-trail ${style} cursor-trail-restored`;
+    if (style === 'image' && !trailSettings.trail_image_url) style = 'sparkle';
+
+    el.className = `cursor-trail ${style} cursor-trail-runtime`;
     el.style.left = `${x}px`;
     el.style.top = `${y}px`;
     el.style.width = `${size}px`;
@@ -74,20 +98,40 @@
     if (style === 'image') {
       const url = window.publicUrlForPath?.(trailSettings.trail_image_url || '') || '';
       if (url) el.style.backgroundImage = `url("${cssUrl(url)}")`;
-      else el.className = 'cursor-trail sparkle cursor-trail-restored';
     }
 
     layer.appendChild(el);
     el.addEventListener('animationend', () => el.remove(), { once: true });
+    setTimeout(() => el.remove(), clamp(trailSettings.trail_fade_ms, 100, 3000, 520) + 200);
   }
 
-  // Keep the effect visible above the page, stars and widgets, but below the cursor itself.
-  layer.style.setProperty('z-index', '19990', 'important');
-  layer.style.setProperty('display', 'block', 'important');
+  function reactivateAfterEnter() {
+    const layer = ensureFxLayer();
+    layer.style.setProperty('display', 'block', 'important');
+    layer.style.setProperty('visibility', 'visible', 'important');
+    layer.style.setProperty('opacity', '1', 'important');
+    last = { x: -9999, y: -9999 };
+  }
+
+  installStyle();
+  ensureFxLayer();
 
   document.addEventListener('pointermove', event => {
     createTrail(event.clientX, event.clientY);
-  }, { passive: true });
+  }, { passive: true, capture: true });
+
+  const enter = document.getElementById('enterButton');
+  enter?.addEventListener('click', () => {
+    reactivateAfterEnter();
+    requestAnimationFrame(reactivateAfterEnter);
+    setTimeout(reactivateAfterEnter, 100);
+    setTimeout(reactivateAfterEnter, 700);
+  }, true);
+
+  window.addEventListener('pageshow', reactivateAfterEnter);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) reactivateAfterEnter();
+  });
 
   loadSettings();
 })();
