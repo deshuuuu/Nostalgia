@@ -2,6 +2,7 @@
   'use strict';
 
   const cfg = window.APP_CONFIG || {};
+  const placeholder = 'assets/placeholder-character.svg';
 
   async function applySplitImages() {
     if (!window.SUPABASE_CONFIGURED || !window.db) return;
@@ -20,11 +21,11 @@
       const homeImage = document.getElementById('characterImage');
       const profileImage = document.getElementById('profileImage');
 
-      if (homeImage && homePath) {
-        homeImage.src = window.publicUrlForPath(homePath) || homeImage.src;
+      if (homeImage) {
+        homeImage.src = homePath ? (window.publicUrlForPath(homePath) || placeholder) : placeholder;
       }
-      if (profileImage && profilePath) {
-        profileImage.src = window.publicUrlForPath(profilePath) || profileImage.src;
+      if (profileImage) {
+        profileImage.src = profilePath ? (window.publicUrlForPath(profilePath) || placeholder) : placeholder;
       }
     } catch (error) {
       console.warn('HOME/PROFILE 분리 이미지를 불러오지 못했습니다.', error);
