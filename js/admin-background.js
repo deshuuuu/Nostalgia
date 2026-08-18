@@ -17,6 +17,10 @@
     return /^#[0-9a-f]{6}$/i.test(v) ? v : fallback;
   }
 
+  function isEnabled(value) {
+    return value === true || value === 1 || value === '1' || String(value).toLowerCase() === 'true';
+  }
+
   async function fetchSettings() {
     const { data, error } = await window.db
       .from('site_content')
@@ -27,12 +31,27 @@
     return data?.settings_json || {};
   }
 
+  function readControls() {
+    const baseInput = document.getElementById('backgroundColorInput');
+    const enabledInput = document.getElementById('backgroundGradientEnabledInput');
+    const startInput = document.getElementById('backgroundGradientStartInput');
+    const endInput = document.getElementById('backgroundGradientEndInput');
+    const angleInput = document.getElementById('backgroundGradientAngleInput');
+
+    if (baseInput) current.base = normalizeHex(baseInput.value, current.base);
+    if (enabledInput) current.enabled = enabledInput.checked;
+    if (startInput) current.start = normalizeHex(startInput.value, current.start);
+    if (endInput) current.end = normalizeHex(endInput.value, current.end);
+    if (angleInput) current.angle = Math.max(0, Math.min(360, Number(angleInput.value) || 0));
+  }
+
   async function persist() {
+    readControls();
     const settings = await fetchSettings();
     const merged = {
       ...settings,
       background_color: current.base,
-      background_gradient_enabled: current.enabled,
+      background_gradient_enabled: Boolean(current.enabled),
       background_gradient_start: current.start,
       background_gradient_end: current.end,
       background_gradient_angle: current.angle
@@ -85,7 +104,7 @@
     if (!panel || !bgInput || document.getElementById('backgroundGradientControls')) return;
 
     current.base = normalizeHex(settings.background_color, '#55564f');
-    current.enabled = settings.background_gradient_enabled === true;
+    current.enabled = isEnabled(settings.background_gradient_enabled);
     current.start = normalizeHex(settings.background_gradient_start, current.base);
     current.end = normalizeHex(settings.background_gradient_end, current.start);
     const angle = Number(settings.background_gradient_angle ?? 180);
@@ -108,10 +127,9 @@
       <label>방향 <span id="backgroundGradientAngleLabel"></span>
         <input id="backgroundGradientAngleInput" type="range" min="0" max="360" step="1">
       </label>
-      <p class="muted" style="margin-bottom:0">그라데이션 OFF면 ‘배경 컬러’ 한 색만 그대로 사용합니다. ON이면 시작색/끝색만 사용하며 첫 화면에도 똑같이 적용됩니다.</p>`;
+      <p class="muted" style="margin-bottom:0">그라데이션 OFF면 ‘배경 컬러’ 한 색만 그대로 사용합니다. ON이면 시작색/끝색을 그대로 사용하며 첫 화면에도 똑같이 적용됩니다.</p>`;
 
-    const anchor = bgInput.closest('label');
-    anchor?.after(box);
+    bgInput.closest('label')?.after(box);
 
     const enabled = document.getElementById('backgroundGradientEnabledInput');
     const start = document.getElementById('backgroundGradientStartInput');
@@ -127,7 +145,7 @@
     enabled.addEventListener('change', () => {
       current.enabled = enabled.checked;
       updatePreview();
-      scheduleSave();
+      scheduleSave(80);
     });
     start.addEventListener('input', () => {
       current.start = start.value;
@@ -147,20 +165,27 @@
 
     bgInput.addEventListener('input', () => {
       current.base = normalizeHex(bgInput.value, current.base);
-      current.start = current.base;
-      start.value = current.start;
       if (!current.enabled) {
+        current.start = current.base;
         current.end = current.base;
+        start.value = current.start;
         end.value = current.end;
       }
       updatePreview();
       scheduleSave();
     });
 
-    /* admin.js keeps its own settings snapshot. A full save can otherwise write an older
-       background object back to the row, so persist our current block again afterward. */
+    // Legacy autosave clicks 전체 저장 when the background color fires CHANGE.
+    // That old save can contain stale gradient values, so background persistence
+    // is owned exclusively by this module.
+    document.addEventListener('change', event => {
+      if (event.target?.id === 'backgroundColorInput') event.stopImmediatePropagation();
+    }, true);
+
+    // Manual full-save can also contain an older in-memory settings object.
+    // Re-save what is visibly selected after admin.js finishes.
     document.getElementById('saveAllButton')?.addEventListener('click', () => {
-      setTimeout(() => persist().catch(handleError), 850);
+      setTimeout(() => persist().catch(handleError), 900);
     });
   }
 
