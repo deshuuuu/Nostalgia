@@ -30,9 +30,7 @@ body::before {
   border-color: color-mix(in srgb, var(--accent) 12%, transparent) !important;
   box-shadow: none !important;
 }
-.character-frame img {
-  filter: none !important;
-}
+.character-frame img,
 .character-frame:hover img {
   filter: none !important;
 }
@@ -155,6 +153,22 @@ body::before {
   min-width: 0;
   margin: 0;
 }
+
+/* Progress and volume bars use the site's point color instead of browser blue. */
+#musicWidget input[type="range"] {
+  accent-color: var(--accent) !important;
+}
+#musicWidget input[type="range"]::-webkit-slider-thumb {
+  background-color: var(--accent) !important;
+}
+#musicWidget input[type="range"]::-moz-range-thumb {
+  background-color: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+#musicWidget input[type="range"]::-moz-range-progress {
+  background-color: var(--accent) !important;
+}
+
 #musicWidget .legacy-bgm-row,
 #musicWidget .music-old-compact-row {
   display: none !important;
