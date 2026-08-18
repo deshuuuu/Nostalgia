@@ -4,10 +4,26 @@
   const PLACEHOLDER = 'assets/placeholder-character.svg';
   const KEY_ORDER = ['Z', 'X', 'C', 'V'];
   const DEFAULT_KEYCAP_CONFIG = {
-    Z: { image: 'https://i.imgur.com/FcyxREc.png', shadow: '#A660A7' },
-    X: { image: 'https://i.imgur.com/GfHCsbM.png', shadow: '#A660A7' },
-    C: { image: 'https://i.imgur.com/ZawxGiT.png', shadow: '#A660A7' },
-    V: { image: 'https://i.imgur.com/VxCfK6k.png', shadow: '#A660A7' }
+    Z: {
+      image: 'https://i.imgur.com/FcyxREc.png',
+      sound: 'https://www.image2url.com/r2/default/files/1786511645382-3b00c607-98fa-421d-a106-9ca9ed2fad8a.mp3',
+      shadow: '#A660A7'
+    },
+    X: {
+      image: 'https://i.imgur.com/GfHCsbM.png',
+      sound: 'https://www.image2url.com/r2/default/files/1786511661624-4a46f73d-2b1f-4ab7-a638-e92d701ffb8b.mp3',
+      shadow: '#A660A7'
+    },
+    C: {
+      image: 'https://i.imgur.com/ZawxGiT.png',
+      sound: 'https://www.image2url.com/r2/default/files/1786511677758-88acd442-1d57-48d4-9254-d82373dbd486.mp3',
+      shadow: '#A660A7'
+    },
+    V: {
+      image: 'https://i.imgur.com/VxCfK6k.png',
+      sound: 'https://www.image2url.com/r2/default/files/1786511708744-6a343c08-af5a-44a4-9e21-b2a56f8f809e.mp3',
+      shadow: '#A660A7'
+    }
   };
 
   async function refreshEntry() {
@@ -72,7 +88,28 @@
     return defaults;
   }
 
-  function enhanceKeycapWidget(attempt = 0) {
+  async function loadUploadedKeycapSounds() {
+    const sounds = {};
+    if (!window.db || !window.SUPABASE_CONFIGURED) return sounds;
+    try {
+      const cfg = window.APP_CONFIG || {};
+      const { data, error } = await window.db
+        .from('site_content')
+        .select('settings_json')
+        .eq('id', cfg.siteId || 1)
+        .single();
+      if (error) throw error;
+      const stored = data?.settings_json?.keycap_sounds || {};
+      KEY_ORDER.forEach(key => {
+        if (stored[key]) sounds[key] = stored[key];
+      });
+    } catch (error) {
+      console.warn('키캡 업로드 사운드 확인에 실패했습니다.', error);
+    }
+    return sounds;
+  }
+
+  async function enhanceKeycapWidget(attempt = 0) {
     const mount = document.getElementById('keycapMount');
     const root = mount?.shadowRoot;
     if (!root) {
@@ -82,6 +119,7 @@
     if (root.host?.dataset?.enhancedKeycap === '1') return;
 
     const config = parseKeycapConfig(root);
+    const uploadedSounds = await loadUploadedKeycapSounds();
     root.host.dataset.enhancedKeycap = '1';
     root.innerHTML = `
       <style>
@@ -105,11 +143,31 @@
     const addBtn = root.querySelector('.add-keycap');
     const container = root.querySelector('.keycap-container');
     const active = new Map();
+    const audioMap = new Map();
     let currentIndex = 0;
 
-    function imageUrl(path) {
+    function resolveUrl(path) {
       if (!path) return '';
       return window.publicUrlForPath ? window.publicUrlForPath(path) : path;
+    }
+
+    KEY_ORDER.forEach(key => {
+      const source = uploadedSounds[key] || config[key]?.sound || '';
+      const url = resolveUrl(source);
+      if (url) {
+        const audio = new Audio(url);
+        audio.preload = 'auto';
+        audioMap.set(key, audio);
+      }
+    });
+
+    function triggerSound(key) {
+      const audio = audioMap.get(key);
+      if (!audio) return;
+      try {
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+      } catch (_) {}
     }
 
     function addNextKeycap() {
@@ -119,11 +177,11 @@
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'dynamic-keycap';
-      button.dataset.key = key;
+      button.dataset.dynamicKey = key;
       button.style.setProperty('--shadow-color', item.shadow || '#A660A7');
       button.setAttribute('aria-label', `${key} 키캡`);
 
-      const url = imageUrl(item.image);
+      const url = resolveUrl(item.image);
       if (url) {
         const image = document.createElement('img');
         image.src = url;
@@ -143,6 +201,11 @@
         button.appendChild(fallback);
       }
 
+      button.addEventListener('pointerdown', event => {
+        event.stopPropagation();
+        triggerSound(key);
+      });
+
       container.appendChild(button);
       active.set(key, button);
       currentIndex += 1;
@@ -151,8 +214,6 @@
 
     addBtn.addEventListener('click', addNextKeycap);
 
-    // site.js has its own document key handler. Capture first so sounds only fire
-    // for keycaps that have actually been added with the + button.
     document.addEventListener('keydown', event => {
       const key = String(event.key || '').toUpperCase();
       if (!KEY_ORDER.includes(key)) return;
@@ -161,7 +222,7 @@
       const button = active.get(key);
       if (!button) return;
       button.classList.add('pressed');
-      button.click();
+      triggerSound(key);
     }, true);
 
     document.addEventListener('keyup', event => {
