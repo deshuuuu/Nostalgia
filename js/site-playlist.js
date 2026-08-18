@@ -8,6 +8,9 @@
   let entered = false;
   let audio = null;
   let playButton = null;
+  let prevButton = null;
+  let nextButton = null;
+  let listButton = null;
   let progress = null;
   let volume = null;
   let timeLabel = null;
@@ -67,19 +70,16 @@
 
   function stopLegacyAudio() {
     const legacyBgm = document.getElementById('bgmAudio');
-    if (legacyBgm) {
-      try { legacyBgm.pause(); } catch (_) {}
-      legacyBgm.removeAttribute('src');
-      try { legacyBgm.load(); } catch (_) {}
-    }
+    if (!legacyBgm) return;
+    try { legacyBgm.pause(); } catch (_) {}
+    legacyBgm.removeAttribute('src');
+    try { legacyBgm.load(); } catch (_) {}
   }
 
   function replaceAudioElement() {
     const old = document.getElementById('widgetAudio');
     if (!old) return null;
     try { old.pause(); } catch (_) {}
-    old.removeAttribute('src');
-    try { old.load(); } catch (_) {}
     const fresh = document.createElement('audio');
     fresh.id = 'widgetAudio';
     fresh.preload = 'metadata';
@@ -87,7 +87,7 @@
     return fresh;
   }
 
-  function replaceControl(id) {
+  function cloneControl(id) {
     const old = document.getElementById(id);
     if (!old) return null;
     const fresh = old.cloneNode(true);
@@ -100,14 +100,15 @@
     const style = document.createElement('style');
     style.id = 'playlistWidgetStyles';
     style.textContent = `
-      #musicWidget{overflow:visible!important}
-      #musicWidget .playlist-main-row{display:flex;align-items:center;gap:6px;margin-top:12px}
-      #musicWidget .playlist-control{width:30px;height:30px;flex:0 0 30px;border:1px solid rgba(226,220,191,.22);background:rgba(226,220,191,.04);color:var(--accent-soft,#ebe4c2);font:600 11px Georgia,serif;cursor:pointer}
-      #musicWidget .playlist-control:hover{border-color:rgba(226,220,191,.48);background:rgba(226,220,191,.09)}
-      #musicWidget .playlist-list-button{width:auto;min-width:42px;padding:0 7px;font-size:9px;letter-spacing:.08em}
-      #musicWidget .playlist-progress{min-width:0;flex:1}
-      #musicWidget .playlist-panel{position:absolute;left:calc(100% + 10px);top:40px;width:248px;max-height:330px;overflow:auto;padding:8px;border:1px solid rgba(226,220,192,.46);background:rgba(57,59,54,.98);box-shadow:0 18px 44px rgba(18,19,17,.36);z-index:12;display:none}
-      #musicWidget .playlist-panel.open{display:block}
+      #musicWidget{overflow:visible!important;width:300px!important}
+      #musicWidget .playlist-controls{display:grid;grid-template-columns:30px 30px 30px 44px;gap:5px;align-items:center;margin-top:12px}
+      #musicWidget .playlist-control{height:30px;border:1px solid rgba(226,220,191,.25);background:rgba(226,220,191,.045);color:var(--accent-soft,#ebe4c2);font:600 11px Georgia,serif;cursor:pointer}
+      #musicWidget .playlist-control:hover{border-color:rgba(226,220,191,.52);background:rgba(226,220,191,.10)}
+      #musicWidget .playlist-list-button{font-size:9px;letter-spacing:.08em}
+      #musicWidget .playlist-progress-row{display:flex;align-items:center;gap:8px;margin-top:8px}
+      #musicWidget .playlist-progress-row input{min-width:0;flex:1}
+      #musicWidget .playlist-panel{position:absolute;left:calc(100% + 10px);top:40px;width:248px;max-height:330px;overflow:auto;padding:8px;border:1px solid rgba(226,220,192,.46);background:rgba(57,59,54,.98);box-shadow:0 18px 44px rgba(18,19,17,.36);z-index:9999;display:none}
+      #musicWidget .playlist-panel.open{display:block!important}
       #musicWidget .playlist-panel::before{content:'PLAYLIST';display:block;padding:4px 7px 9px;color:var(--accent,#d9d0a4);font:600 9px Georgia,serif;letter-spacing:.18em;border-bottom:1px solid rgba(226,220,191,.14)}
       #musicWidget .playlist-item{width:100%;display:grid;grid-template-columns:38px minmax(0,1fr);gap:9px;align-items:center;padding:7px;border:0;border-bottom:1px solid rgba(226,220,191,.09);background:transparent;color:#d8d3bd;text-align:left;cursor:pointer}
       #musicWidget .playlist-item:hover{background:rgba(226,220,191,.06)}
@@ -132,7 +133,6 @@
       listPanel.appendChild(empty);
       return;
     }
-
     playlist.forEach((track, index) => {
       const button = document.createElement('button');
       button.type = 'button';
@@ -181,14 +181,13 @@
     audio.currentTime = 0;
     audio.load();
     updateMeta();
-    progress.value = 0;
+    if (progress) progress.value = 0;
     if (timeLabel) timeLabel.textContent = '00:00 / 00:00';
     if (autoplay && (entered || wasPlaying)) audio.play().catch(() => {});
   }
 
   function changeTrack(delta) {
-    if (!playlist.length) return;
-    loadTrack(currentIndex + delta, true);
+    if (playlist.length) loadTrack(currentIndex + delta, true);
   }
 
   function formatTime(value) {
@@ -203,79 +202,47 @@
     if (!audio) return;
     stopLegacyAudio();
 
-    playButton = replaceControl('widgetPlayButton');
-    progress = replaceControl('widgetProgress');
-    volume = replaceControl('widgetVolume');
+    playButton = cloneControl('widgetPlayButton');
+    prevButton = cloneControl('playlistPrevButton');
+    nextButton = cloneControl('playlistNextButton');
+    listButton = cloneControl('playlistListButton');
+    progress = cloneControl('widgetProgress');
+    volume = cloneControl('widgetVolume');
     timeLabel = document.getElementById('widgetTime');
+    listPanel = document.getElementById('playlistPanel');
 
     const oldBgmToggle = document.getElementById('bgmToggle');
     if (oldBgmToggle?.parentElement) oldBgmToggle.parentElement.classList.add('legacy-bgm-row');
-
-    const row = playButton?.parentElement;
-    if (!row || !progress) return;
-    row.classList.add('playlist-main-row');
-    progress.classList.add('playlist-progress');
-
-    const prev = document.createElement('button');
-    prev.type = 'button';
-    prev.className = 'playlist-control';
-    prev.textContent = '‹';
-    prev.title = '이전 곡';
-
-    const next = document.createElement('button');
-    next.type = 'button';
-    next.className = 'playlist-control';
-    next.textContent = '›';
-    next.title = '다음 곡';
-
-    const list = document.createElement('button');
-    list.type = 'button';
-    list.className = 'playlist-control playlist-list-button';
-    list.textContent = 'LIST';
-    list.title = '재생목록';
-
-    playButton.className = 'playlist-control';
-    playButton.textContent = '▶';
-    row.insertBefore(prev, playButton);
-    playButton.after(next, list);
-
-    const body = document.querySelector('#musicWidget .widget-body');
-    listPanel = document.createElement('div');
-    listPanel.className = 'playlist-panel';
-    body?.appendChild(listPanel);
 
     const initialVolume = Number(settings.music_playlist_volume ?? settings.widget_volume ?? settings.bgm_volume ?? 0.7);
     audio.volume = Number.isFinite(initialVolume) ? Math.max(0, Math.min(1, initialVolume)) : 0.7;
     if (volume) volume.value = audio.volume;
 
-    prev.addEventListener('click', () => changeTrack(-1));
-    next.addEventListener('click', () => changeTrack(1));
-    list.addEventListener('click', event => {
+    prevButton?.addEventListener('click', () => changeTrack(-1));
+    nextButton?.addEventListener('click', () => changeTrack(1));
+    listButton?.addEventListener('click', event => {
       event.stopPropagation();
-      listPanel.classList.toggle('open');
+      listPanel?.classList.toggle('open');
     });
     document.addEventListener('pointerdown', event => {
       if (!listPanel?.classList.contains('open')) return;
-      if (listPanel.contains(event.target) || list.contains(event.target)) return;
+      if (listPanel.contains(event.target) || listButton?.contains(event.target)) return;
       listPanel.classList.remove('open');
     });
 
-    playButton.addEventListener('click', () => {
+    playButton?.addEventListener('click', () => {
       if (!playlist.length) return;
       if (audio.paused) {
         entered = true;
         audio.play().catch(() => {});
-      } else {
-        audio.pause();
-      }
+      } else audio.pause();
     });
 
-    progress.addEventListener('input', () => {
+    progress?.addEventListener('input', () => {
       if (Number.isFinite(audio.duration) && audio.duration > 0) {
         audio.currentTime = (Number(progress.value) / 1000) * audio.duration;
       }
     });
-
     volume?.addEventListener('input', () => {
       audio.volume = Math.max(0, Math.min(1, Number(volume.value) || 0));
     });
@@ -285,13 +252,12 @@
     audio.addEventListener('timeupdate', () => {
       const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
       const current = audio.currentTime || 0;
-      progress.value = duration ? Math.round((current / duration) * 1000) : 0;
+      if (progress) progress.value = duration ? Math.round((current / duration) * 1000) : 0;
       if (timeLabel) timeLabel.textContent = `${formatTime(current)} / ${formatTime(duration)}`;
     });
     audio.addEventListener('ended', () => changeTrack(1));
 
-    const enterButton = document.getElementById('enterButton');
-    enterButton?.addEventListener('click', () => {
+    document.getElementById('enterButton')?.addEventListener('click', () => {
       entered = true;
       setTimeout(() => {
         stopLegacyAudio();
@@ -302,17 +268,16 @@
 
   async function boot() {
     injectStyles();
+    const titlebar = document.querySelector('#musicWidget .widget-titlebar span');
+    if (titlebar) titlebar.textContent = 'Nostalgia.exe';
     const settings = await fetchSettings();
     playlist = normalizePlaylist(settings);
-    currentIndex = 0;
     setupControls(settings);
     if (playlist.length) loadTrack(0, false);
     else updateMeta();
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => setTimeout(boot, 120), { once: true });
-  } else {
-    setTimeout(boot, 120);
-  }
+    document.addEventListener('DOMContentLoaded', () => setTimeout(boot, 160), { once: true });
+  } else setTimeout(boot, 160);
 })();
