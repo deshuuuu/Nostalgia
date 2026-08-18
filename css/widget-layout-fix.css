@@ -1,37 +1,47 @@
-/* Floating widget placement fix: keep widgets clear of the top navigation. */
+/* Floating widget default placement: match the requested reference layout. */
 .music-widget {
-  top: 112px;
-  left: 22px;
+  top: 54px;
+  left: 20px;
+  right: auto;
+  bottom: auto;
 }
 
 .keycap-widget {
-  top: 112px;
-  right: 22px;
+  top: auto;
+  left: auto;
+  right: 16px;
+  bottom: 14px;
 }
 
 @media (max-width: 900px) {
   .music-widget {
-    top: 108px;
+    top: 52px;
     left: 12px;
+    right: auto;
+    bottom: auto;
   }
 
   .keycap-widget {
-    top: 108px;
+    top: auto;
+    left: auto;
     right: 12px;
+    bottom: 12px;
   }
 }
 
 @media (max-width: 640px) {
-  /* The header can wrap on narrow screens, so keep both widgets well below it. */
+  /* Keep the same corner relationship on narrow screens without covering the header. */
   .music-widget {
-    top: 136px;
+    top: 92px;
     left: 8px;
     right: auto;
+    bottom: auto;
   }
 
   .keycap-widget {
-    top: 350px;
-    right: 8px;
+    top: auto;
     left: auto;
+    right: 8px;
+    bottom: 8px;
   }
 }
