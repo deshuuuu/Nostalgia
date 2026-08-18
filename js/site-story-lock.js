@@ -144,7 +144,6 @@
     chapters.forEach((chapter, index) => {
       const details = document.createElement('details');
       details.className = `story-card story-lock-managed${chapter.locked && !unlocked ? ' story-locked-card' : ''}`;
-      if (index === 0 && !chapter.locked) details.open = true;
 
       const summary = document.createElement('summary');
       summary.textContent = chapter.title || `CHAPTER ${index + 1}`;
