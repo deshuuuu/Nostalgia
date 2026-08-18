@@ -27,10 +27,85 @@
     return data?.publicUrl || '';
   };
 
-  // Admin-only helper: make first-screen settings and media uploads auto-save.
-  if (/\/admin\/?(?:index\.html)?$/i.test(location.pathname)) {
-    const helper = document.createElement('script');
-    helper.src = new URL('js/admin-autosave.js?v=20260818-1', siteBaseUrl).href;
-    document.head.appendChild(helper);
+  // IMPORTANT: admin-autosave.js is loaded exactly once by admin/index.html.
+  // Do not dynamically inject it here; duplicate listeners caused repeated saves.
+
+  if (/\/admin\/?(?:index\.html)?$/i.test(location.pathname) && window.db && !window.__nostalgiaAdminWriteGuardInstalled) {
+    window.__nostalgiaAdminWriteGuardInstalled = true;
+    let authorizedUntil = 0;
+
+    function authorize(ms) {
+      authorizedUntil = Math.max(authorizedUntil, Date.now() + ms);
+    }
+    function isAuthorized() {
+      return Date.now() <= authorizedUntil;
+    }
+    function clearAuthorization() {
+      authorizedUntil = 0;
+    }
+    function insideAdmin(target) {
+      return Boolean(target?.closest?.('#adminApp'));
+    }
+
+    document.addEventListener('input', event => {
+      if (!event.isTrusted || !insideAdmin(event.target)) return;
+      authorize(event.target?.type === 'file' ? 600000 : 30000);
+    }, true);
+
+    document.addEventListener('change', event => {
+      if (!event.isTrusted || !insideAdmin(event.target)) return;
+      authorize(event.target?.type === 'file' ? 600000 : 60000);
+    }, true);
+
+    document.addEventListener('click', event => {
+      if (!event.isTrusted || !insideAdmin(event.target)) return;
+      if (event.target.closest('#adminNav') || event.target.closest('a')) return;
+      if (event.target.closest('button')) authorize(120000);
+    }, true);
+
+    const originalFrom = window.db.from.bind(window.db);
+    function noopBuilder() {
+      let proxy;
+      proxy = new Proxy({}, {
+        get(_target, prop) {
+          if (prop === 'then') return resolve => Promise.resolve({ data: null, error: null }).then(resolve);
+          if (prop === 'catch' || prop === 'finally') return () => proxy;
+          return () => proxy;
+        }
+      });
+      return proxy;
+    }
+
+    window.db.from = function guardedFrom(table) {
+      const builder = originalFrom(table);
+      if (table !== 'site_content') return builder;
+      return new Proxy(builder, {
+        get(target, prop, receiver) {
+          if (prop === 'update') {
+            return function guardedUpdate(payload, options) {
+              if (!isAuthorized()) {
+                console.warn('[Nostalgia admin] 페이지 초기화에 의한 설정 덮어쓰기를 차단했습니다.');
+                return noopBuilder();
+              }
+              return target.update(payload, options);
+            };
+          }
+          const value = Reflect.get(target, prop, receiver);
+          return typeof value === 'function' ? value.bind(target) : value;
+        }
+      });
+    };
+
+    window.nostalgiaAuthorizeAdminWrite = authorize;
+    window.nostalgiaClearAdminWriteAuthorization = clearAuthorization;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const app = document.getElementById('adminApp');
+      if (!app) return;
+      const observer = new MutationObserver(() => {
+        if (!app.classList.contains('hidden')) clearAuthorization();
+      });
+      observer.observe(app, { attributes: true, attributeFilter: ['class'] });
+    }, { once: true });
   }
 })();
