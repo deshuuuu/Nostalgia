@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#55564f" />
   <title>Character Home · Admin</title>
-  <link rel="stylesheet" href="../css/admin.css?v=20260818-6" />
+  <link rel="stylesheet" href="../css/admin.css?v=20260818-7" />
 </head>
 <body>
   <div id="adminLogin" class="login-screen">
@@ -13,10 +13,7 @@
       <p class="eyebrow">PRIVATE ACCESS</p>
       <h1>ADMIN CONSOLE</h1>
       <p class="muted">설정된 관리자 계정의 비밀번호를 입력하세요.</p>
-      <label>
-        PASSWORD
-        <input id="adminPassword" type="password" autocomplete="current-password" required />
-      </label>
+      <label>PASSWORD<input id="adminPassword" type="password" autocomplete="current-password" required /></label>
       <button class="primary-button" type="submit">LOGIN</button>
       <p id="loginMessage" class="form-message"></p>
       <a class="back-link" href="../">← 공개 사이트로 돌아가기</a>
@@ -25,10 +22,7 @@
 
   <div id="adminApp" class="admin-shell hidden">
     <aside class="admin-sidebar">
-      <div>
-        <p class="eyebrow">CHARACTER HOME</p>
-        <h1>ADMIN</h1>
-      </div>
+      <div><p class="eyebrow">CHARACTER HOME</p><h1>ADMIN</h1></div>
       <nav id="adminNav" class="admin-nav">
         <button class="active" data-tab="character" type="button">CHARACTER</button>
         <button data-tab="profile" type="button">PROFILE</button>
@@ -47,203 +41,38 @@
     </aside>
 
     <main class="admin-main">
-      <header class="admin-topbar">
-        <div>
-          <p class="eyebrow">CONTENT MANAGEMENT</p>
-          <h2 id="currentTabTitle">CHARACTER</h2>
-        </div>
-        <div class="topbar-status">
-          <span id="saveStatus">준비됨</span>
-          <button id="saveAllButton" class="primary-button" type="button">전체 저장</button>
-        </div>
-      </header>
+      <header class="admin-topbar"><div><p class="eyebrow">CONTENT MANAGEMENT</p><h2 id="currentTabTitle">CHARACTER</h2></div><div class="topbar-status"><span id="saveStatus">준비됨</span><button id="saveAllButton" class="primary-button" type="button">전체 저장</button></div></header>
 
-      <section class="admin-tab active" data-tab-panel="character">
-        <div class="panel-grid two">
-          <article class="admin-card">
-            <h3>기본 정보</h3>
-            <label>캐릭터 이름<input id="characterNameInput" type="text" /></label>
-            <label>한 줄 문구<input id="taglineInput" type="text" /></label>
-            <label>대표 이미지
-              <input id="characterImageFile" type="file" accept="image/*" />
-            </label>
-            <div id="characterImagePreview" class="file-preview image-preview"></div>
-          </article>
-          <article class="admin-card hint-card">
-            <h3>사용 방법</h3>
-            <p>대표 이미지는 HOME과 PROFILE에 함께 사용됩니다. 이미지를 선택하면 업로드 후 자동 저장됩니다.</p>
-          </article>
-        </div>
-      </section>
+      <section class="admin-tab active" data-tab-panel="character"><div class="panel-grid two"><article class="admin-card"><h3>기본 정보</h3><label>캐릭터 이름<input id="characterNameInput" type="text" /></label><label>한 줄 문구<input id="taglineInput" type="text" /></label><label>대표 이미지<input id="characterImageFile" type="file" accept="image/*" /></label><div id="characterImagePreview" class="file-preview image-preview"></div></article><article class="admin-card hint-card"><h3>사용 방법</h3><p>대표 이미지는 HOME과 PROFILE에 함께 사용됩니다. 이미지를 선택하면 업로드 후 자동 저장됩니다.</p></article></div></section>
 
-      <section class="admin-tab" data-tab-panel="profile">
-        <article class="admin-card">
-          <h3>프로필 소개</h3>
-          <label>소개글<textarea id="profileBioInput" rows="8"></textarea></label>
-          <div class="subhead-row">
-            <h3>프로필 항목</h3>
-            <button id="addProfileField" class="secondary-button" type="button">+ 항목 추가</button>
-          </div>
-          <div id="profileFieldsEditor" class="stack-list"></div>
-        </article>
-      </section>
+      <section class="admin-tab" data-tab-panel="profile"><article class="admin-card"><h3>프로필 소개</h3><label>소개글<textarea id="profileBioInput" rows="8"></textarea></label><div class="subhead-row"><h3>프로필 항목</h3><button id="addProfileField" class="secondary-button" type="button">+ 항목 추가</button></div><div id="profileFieldsEditor" class="stack-list"></div></article></section>
 
-      <section class="admin-tab" data-tab-panel="story">
-        <article class="admin-card">
-          <div class="subhead-row">
-            <h3>스토리 챕터</h3>
-            <button id="addStoryChapter" class="secondary-button" type="button">+ 챕터 추가</button>
-          </div>
-          <div id="storyEditor" class="stack-list"></div>
-        </article>
-      </section>
+      <section class="admin-tab" data-tab-panel="story"><article class="admin-card"><div class="subhead-row"><h3>스토리 챕터</h3><button id="addStoryChapter" class="secondary-button" type="button">+ 챕터 추가</button></div><div id="storyEditor" class="stack-list"></div></article></section>
 
-      <section class="admin-tab" data-tab-panel="gallery">
-        <div class="panel-grid two">
-          <article class="admin-card">
-            <h3>이미지 업로드</h3>
-            <label>파일<input id="galleryFile" type="file" accept="image/*" /></label>
-            <label>캡션<input id="galleryCaption" type="text" /></label>
-            <label>대체 텍스트<input id="galleryAlt" type="text" /></label>
-            <button id="uploadGalleryButton" class="primary-button" type="button">갤러리에 추가</button>
-            <p class="muted">업로드/삭제는 로그인한 관리자에게만 허용됩니다.</p>
-          </article>
-          <article class="admin-card">
-            <h3>갤러리 관리</h3>
-            <div id="galleryEditor" class="gallery-editor"></div>
-          </article>
-        </div>
-      </section>
+      <section class="admin-tab" data-tab-panel="gallery"><div class="panel-grid two"><article class="admin-card"><h3>이미지 업로드</h3><label>파일<input id="galleryFile" type="file" accept="image/*" /></label><label>캡션<input id="galleryCaption" type="text" /></label><label>대체 텍스트<input id="galleryAlt" type="text" /></label><button id="uploadGalleryButton" class="primary-button" type="button">갤러리에 추가</button><p class="muted">업로드/삭제는 로그인한 관리자에게만 허용됩니다.</p></article><article class="admin-card"><h3>갤러리 관리</h3><div id="galleryEditor" class="gallery-editor"></div></article></div></section>
 
-      <section class="admin-tab" data-tab-panel="audio">
-        <div class="panel-grid two">
-          <article class="admin-card">
-            <h3>사이트 BGM</h3>
-            <label>음원 업로드<input id="bgmFile" type="file" accept="audio/*" /></label>
-            <label>제목<input id="bgmTitleInput" type="text" /></label>
-            <label>기본 볼륨 <span id="bgmVolumeLabel"></span><input id="bgmVolumeInput" type="range" min="0" max="1" step="0.01" /></label>
-            <div id="bgmPreview" class="file-preview"></div>
-          </article>
-          <article class="admin-card">
-            <h3>전체 클릭음</h3>
-            <label>효과음 업로드<input id="clickFile" type="file" accept="audio/*" /></label>
-            <label>기본 볼륨 <span id="clickVolumeLabel"></span><input id="clickVolumeInput" type="range" min="0" max="1" step="0.01" /></label>
-            <div id="clickPreview" class="file-preview"></div>
-          </article>
-        </div>
-      </section>
+      <section class="admin-tab" data-tab-panel="audio"><div class="panel-grid two"><article class="admin-card"><h3>사이트 BGM</h3><label>음원 업로드<input id="bgmFile" type="file" accept="audio/*" /></label><label>제목<input id="bgmTitleInput" type="text" /></label><label>기본 볼륨 <span id="bgmVolumeLabel"></span><input id="bgmVolumeInput" type="range" min="0" max="1" step="0.01" /></label><div id="bgmPreview" class="file-preview"></div></article><article class="admin-card"><h3>전체 클릭음</h3><label>효과음 업로드<input id="clickFile" type="file" accept="audio/*" /></label><label>기본 볼륨 <span id="clickVolumeLabel"></span><input id="clickVolumeInput" type="range" min="0" max="1" step="0.01" /></label><div id="clickPreview" class="file-preview"></div></article></div></section>
 
-      <section class="admin-tab" data-tab-panel="music">
-        <div class="panel-grid two">
-          <article class="admin-card">
-            <h3>음악 위젯</h3>
-            <label>음원 업로드<input id="widgetTrackFile" type="file" accept="audio/*" /></label>
-            <label>앨범 커버<input id="widgetCoverFile" type="file" accept="image/*" /></label>
-            <label>곡 제목<input id="widgetTrackTitleInput" type="text" /></label>
-            <label>아티스트<input id="widgetTrackArtistInput" type="text" /></label>
-            <label>기본 볼륨 <span id="widgetVolumeLabel"></span><input id="widgetVolumeInput" type="range" min="0" max="1" step="0.01" /></label>
-            <label class="check-row"><input id="pauseBgmCheck" type="checkbox" /> 위젯 곡 재생 시 BGM 자동 일시정지</label>
-          </article>
-          <article class="admin-card">
-            <h3>미리보기</h3>
-            <div id="widgetCoverPreview" class="file-preview image-preview square"></div>
-            <div id="widgetTrackPreview" class="file-preview"></div>
-          </article>
-        </div>
-      </section>
+      <section class="admin-tab" data-tab-panel="music"><div class="panel-grid two"><article class="admin-card"><h3>음악 위젯</h3><label>음원 업로드<input id="widgetTrackFile" type="file" accept="audio/*" /></label><label>앨범 커버<input id="widgetCoverFile" type="file" accept="image/*" /></label><label>곡 제목<input id="widgetTrackTitleInput" type="text" /></label><label>아티스트<input id="widgetTrackArtistInput" type="text" /></label><label>기본 볼륨 <span id="widgetVolumeLabel"></span><input id="widgetVolumeInput" type="range" min="0" max="1" step="0.01" /></label><label class="check-row"><input id="pauseBgmCheck" type="checkbox" /> 위젯 곡 재생 시 BGM 자동 일시정지</label></article><article class="admin-card"><h3>미리보기</h3><div id="widgetCoverPreview" class="file-preview image-preview square"></div><div id="widgetTrackPreview" class="file-preview"></div></article></div></section>
 
-      <section class="admin-tab" data-tab-panel="clicker">
-        <div class="panel-grid two">
-          <article class="admin-card">
-            <h3>키캡 음성 / 효과음</h3>
-            <div class="key-audio-grid">
-              <label>Z<input class="keycap-audio-file" data-key="Z" type="file" accept="audio/*" /></label>
-              <label>X<input class="keycap-audio-file" data-key="X" type="file" accept="audio/*" /></label>
-              <label>C<input class="keycap-audio-file" data-key="C" type="file" accept="audio/*" /></label>
-              <label>V<input class="keycap-audio-file" data-key="V" type="file" accept="audio/*" /></label>
-            </div>
-            <div id="keycapAudioStatus" class="stack-list compact-list"></div>
-          </article>
-          <article class="admin-card">
-            <div class="subhead-row">
-              <h3>키캡 HTML / CSS</h3>
-              <button id="resetKeycapHtml" class="secondary-button" type="button">기본값 복원</button>
-            </div>
-            <p class="muted">HTML과 &lt;style&gt;은 허용하지만 script, onClick 같은 실행 코드는 공개 페이지에서 제거됩니다. 버튼에 data-key="Z"처럼 지정하면 소리가 연결됩니다.</p>
-            <textarea id="keycapHtmlInput" class="code-editor" rows="22" spellcheck="false"></textarea>
-            <div class="subhead-row"><h3>미리보기</h3></div>
-            <div id="keycapHtmlPreview" class="keycap-preview"></div>
-          </article>
-        </div>
-      </section>
+      <section class="admin-tab" data-tab-panel="clicker"><div class="panel-grid two"><article class="admin-card"><h3>키캡 음성 / 효과음</h3><div class="key-audio-grid"><label>Z<input class="keycap-audio-file" data-key="Z" type="file" accept="audio/*" /></label><label>X<input class="keycap-audio-file" data-key="X" type="file" accept="audio/*" /></label><label>C<input class="keycap-audio-file" data-key="C" type="file" accept="audio/*" /></label><label>V<input class="keycap-audio-file" data-key="V" type="file" accept="audio/*" /></label></div><div id="keycapAudioStatus" class="stack-list compact-list"></div></article><article class="admin-card"><div class="subhead-row"><h3>키캡 HTML / CSS</h3><button id="resetKeycapHtml" class="secondary-button" type="button">기본값 복원</button></div><p class="muted">HTML과 &lt;style&gt;은 허용하지만 script, onClick 같은 실행 코드는 공개 페이지에서 제거됩니다. 버튼에 data-key="Z"처럼 지정하면 소리가 연결됩니다.</p><textarea id="keycapHtmlInput" class="code-editor" rows="22" spellcheck="false"></textarea><div class="subhead-row"><h3>미리보기</h3></div><div id="keycapHtmlPreview" class="keycap-preview"></div></article></div></section>
 
-      <section class="admin-tab" data-tab-panel="cursor">
-        <div class="panel-grid two">
-          <article class="admin-card">
-            <h3>전용 커서</h3>
-            <label>커서 이미지<input id="cursorFile" type="file" accept="image/png,image/webp,image/gif,image/svg+xml" /></label>
-            <label>커서 크기(px)<input id="cursorSizeInput" type="number" min="12" max="160" /></label>
-            <label>클릭 시 축소 비율<input id="cursorScaleInput" type="number" min="0.4" max="1" step="0.01" /></label>
-            <div id="cursorPreview" class="file-preview image-preview square"></div>
-          </article>
-          <article class="admin-card">
-            <h3>잔상 / 클릭 효과</h3>
-            <label class="check-row"><input id="trailEnabledCheck" type="checkbox" /> 커서 잔상 사용</label>
-            <label>잔상 스타일
-              <select id="trailStyleInput">
-                <option value="sparkle">SPARKLE</option>
-                <option value="dot">DOT</option>
-                <option value="glow">GLOW</option>
-                <option value="star">STAR</option>
-                <option value="image">IMAGE</option>
-              </select>
-            </label>
-            <label>잔상 간격(px)<input id="trailSpacingInput" type="number" min="2" max="80" /></label>
-            <label>잔상 크기(px)<input id="trailSizeInput" type="number" min="2" max="80" /></label>
-            <label>사라지는 시간(ms)<input id="trailFadeInput" type="number" min="100" max="3000" /></label>
-            <label>잔상 이미지<input id="trailImageFile" type="file" accept="image/*" /></label>
-            <label class="check-row"><input id="clickParticlesCheck" type="checkbox" /> 클릭 파티클 사용</label>
-          </article>
-        </div>
-      </section>
+      <section class="admin-tab" data-tab-panel="cursor"><div class="panel-grid two"><article class="admin-card"><h3>전용 커서</h3><label>커서 이미지<input id="cursorFile" type="file" accept="image/png,image/webp,image/gif,image/svg+xml" /></label><label>커서 크기(px)<input id="cursorSizeInput" type="number" min="12" max="160" /></label><label>클릭 시 축소 비율<input id="cursorScaleInput" type="number" min="0.4" max="1" step="0.01" /></label><div id="cursorPreview" class="file-preview image-preview square"></div></article><article class="admin-card"><h3>잔상 / 클릭 효과</h3><label class="check-row"><input id="trailEnabledCheck" type="checkbox" /> 커서 잔상 사용</label><label>잔상 스타일<select id="trailStyleInput"><option value="sparkle">SPARKLE</option><option value="dot">DOT</option><option value="glow">GLOW</option><option value="star">STAR</option><option value="image">IMAGE</option></select></label><label>잔상 간격(px)<input id="trailSpacingInput" type="number" min="2" max="80" /></label><label>잔상 크기(px)<input id="trailSizeInput" type="number" min="2" max="80" /></label><label>사라지는 시간(ms)<input id="trailFadeInput" type="number" min="100" max="3000" /></label><label>잔상 이미지<input id="trailImageFile" type="file" accept="image/*" /></label><label class="check-row"><input id="clickParticlesCheck" type="checkbox" /> 클릭 파티클 사용</label></article></div></section>
 
-      <section class="admin-tab" data-tab-panel="site">
-        <div class="panel-grid two">
-          <article class="admin-card">
-            <h3>첫 화면 / 페이지 설정</h3>
-            <label>첫 화면 문구<input id="entryKickerInput" type="text" placeholder="A MEMORY, KEPT QUIETLY." /></label>
-            <label>첫 화면 이미지
-              <input id="entryImageFile" type="file" accept="image/*" />
-            </label>
-            <div id="entryImagePreview" class="file-preview image-preview entry-preview"></div>
-            <label>안내 문구<input id="entryNoteInput" type="text" /></label>
-            <label>브라우저 제목<input id="siteTitleInput" type="text" /></label>
-            <label>ENTER 버튼 문구<input id="enterLabelInput" type="text" /></label>
-            <label>포인트 컬러<input id="accentColorInput" type="color" /></label>
-            <label>배경 컬러<input id="backgroundColorInput" type="color" /></label>
-            <p class="muted">첫 화면 문구/안내 문구/버튼 문구는 입력 후 다른 곳을 클릭하면 자동 저장됩니다.</p>
-            <p class="muted">첫 화면 이미지는 선택 후 업로드가 끝나면 자동 저장됩니다.</p>
-            <p class="muted">첫 화면의 이름과 한마디는 CHARACTER 메뉴의 ‘캐릭터 이름’과 ‘한 줄 문구’를 그대로 사용합니다.</p>
-          </article>
-          <article class="admin-card danger-card">
-            <h3>데이터 주의</h3>
-            <p>관리자 페이지는 비밀번호를 코드에 저장하지 않습니다. Supabase Auth 세션과 RLS가 실제 수정 권한을 판단합니다.</p>
-            <p>프로젝트의 service_role 키는 절대로 config.js에 넣지 마세요.</p>
-          </article>
-        </div>
-      </section>
+      <section class="admin-tab" data-tab-panel="site"><div class="panel-grid two"><article class="admin-card"><h3>첫 화면 / 페이지 설정</h3><label>첫 화면 문구<input id="entryKickerInput" type="text" placeholder="A MEMORY, KEPT QUIETLY." /></label><label>첫 화면 이미지<input id="entryImageFile" type="file" accept="image/*" /></label><div id="entryImagePreview" class="file-preview image-preview entry-preview"></div><label>안내 문구<input id="entryNoteInput" type="text" /></label><label>브라우저 제목<input id="siteTitleInput" type="text" /></label><label>ENTER 버튼 문구<input id="enterLabelInput" type="text" /></label><label>포인트 컬러<input id="accentColorInput" type="color" /></label><label>배경 컬러<input id="backgroundColorInput" type="color" /></label><p class="muted">첫 화면 문구/안내 문구/버튼 문구는 입력 후 다른 곳을 클릭하면 자동 저장됩니다.</p><p class="muted">첫 화면 이미지는 선택 후 업로드가 끝나면 자동 저장됩니다.</p><p class="muted">첫 화면의 이름과 한마디는 CHARACTER 메뉴의 ‘캐릭터 이름’과 ‘한 줄 문구’를 그대로 사용합니다.</p></article><article class="admin-card danger-card"><h3>데이터 주의</h3><p>관리자 페이지는 비밀번호를 코드에 저장하지 않습니다. Supabase Auth 세션과 RLS가 실제 수정 권한을 판단합니다.</p><p>프로젝트의 service_role 키는 절대로 config.js에 넣지 마세요.</p></article></div></section>
     </main>
   </div>
 
   <div id="toast" class="toast" role="status"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="../js/config.js?v=20260818-6"></script>
-  <script src="../js/defaults.js?v=20260818-6"></script>
-  <script src="../js/supabase-client.js?v=20260818-6"></script>
-  <script src="../js/admin.js?v=20260818-6"></script>
-  <script src="../js/admin-autosave.js?v=20260818-6"></script>
-  <script src="../js/admin-playlist.js?v=20260818-6"></script>
-  <script src="../js/admin-background.js?v=20260818-6"></script>
+  <script src="../js/config.js?v=20260818-7"></script>
+  <script src="../js/defaults.js?v=20260818-7"></script>
+  <script src="../js/supabase-client.js?v=20260818-7"></script>
+  <script src="../js/admin.js?v=20260818-7"></script>
+  <script src="../js/admin-autosave.js?v=20260818-7"></script>
+  <script src="../js/admin-playlist.js?v=20260818-7"></script>
+  <script src="../js/admin-playlist-labels.js?v=20260818-7"></script>
+  <script src="../js/admin-background.js?v=20260818-7"></script>
 </body>
 </html>
