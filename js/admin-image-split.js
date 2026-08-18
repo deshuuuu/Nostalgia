@@ -3,6 +3,8 @@
 
   const cfg = window.APP_CONFIG || {};
   let loadedOnce = false;
+  let currentHomePath = '';
+  let currentProfilePath = '';
 
   function makeUploadBlock(id, labelText, previewId) {
     const wrap = document.createElement('div');
@@ -45,7 +47,8 @@
     return path;
   }
 
-  async function saveSetting(key, path) {
+  async function mergeAndSaveSplitSettings() {
+    if (!window.SUPABASE_CONFIGURED || !window.db) return;
     const { data, error: readError } = await window.db
       .from('site_content')
       .select('settings_json')
@@ -53,7 +56,10 @@
       .single();
     if (readError) throw readError;
 
-    const settings = { ...(data?.settings_json || {}), [key]: path };
+    const settings = { ...(data?.settings_json || {}) };
+    if (currentHomePath) settings.home_image_url = currentHomePath;
+    if (currentProfilePath) settings.profile_image_url = currentProfilePath;
+
     const { error } = await window.db
       .from('site_content')
       .update({ settings_json: settings, updated_at: new Date().toISOString() })
@@ -72,7 +78,9 @@
       try {
         setStatus('이미지 업로드 중…');
         const path = await uploadFile(file, folder);
-        await saveSetting(key, path);
+        if (key === 'home_image_url') currentHomePath = path;
+        if (key === 'profile_image_url') currentProfilePath = path;
+        await mergeAndSaveSplitSettings();
         setPreview(previewId, path);
         setStatus('저장됨');
       } catch (error) {
@@ -83,6 +91,17 @@
         input.value = '';
       }
     });
+  }
+
+  function bindSaveProtection() {
+    const button = document.getElementById('saveAllButton');
+    if (!button || button.dataset.splitImageProtected === '1') return;
+    button.dataset.splitImageProtected = '1';
+    button.addEventListener('click', () => {
+      if (!currentHomePath && !currentProfilePath) return;
+      setTimeout(() => mergeAndSaveSplitSettings().catch(console.warn), 900);
+      setTimeout(() => mergeAndSaveSplitSettings().catch(console.warn), 1800);
+    }, true);
   }
 
   function buildUi() {
@@ -118,6 +137,7 @@
 
     bindUpload('homeImageFile', 'homeImagePreview', 'home_image_url', 'character/home');
     bindUpload('profileImageFile', 'profileImagePreview', 'profile_image_url', 'character/profile');
+    bindSaveProtection();
     return true;
   }
 
@@ -131,8 +151,10 @@
         .single();
       if (error) throw error;
       const settings = data?.settings_json || {};
-      setPreview('homeImagePreview', settings.home_image_url);
-      setPreview('profileImagePreview', settings.profile_image_url);
+      currentHomePath = settings.home_image_url || '';
+      currentProfilePath = settings.profile_image_url || '';
+      setPreview('homeImagePreview', currentHomePath);
+      setPreview('profileImagePreview', currentProfilePath);
       loadedOnce = true;
     } catch (error) {
       console.warn('분리 이미지 설정을 불러오지 못했습니다.', error);
