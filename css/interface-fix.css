@@ -3,13 +3,15 @@
 /* The default cursor's visible tip sits around x=20%, y=11% of the image.
    Align that tip with the real browser pointer instead of centering the image. */
 .custom-cursor {
+  --cursor-offset-x: -20.3%;
+  --cursor-offset-y: -10.9%;
   --cursor-hotspot-x: 20.3%;
   --cursor-hotspot-y: 10.9%;
-  transform: translate(calc(-1 * var(--cursor-hotspot-x)), calc(-1 * var(--cursor-hotspot-y))) scale(1) !important;
+  transform: translate(var(--cursor-offset-x), var(--cursor-offset-y)) scale(1) !important;
   transform-origin: var(--cursor-hotspot-x) var(--cursor-hotspot-y) !important;
 }
 .custom-cursor.pressed {
-  transform: translate(calc(-1 * var(--cursor-hotspot-x)), calc(-1 * var(--cursor-hotspot-y))) scale(var(--cursor-pressed-scale, .82)) !important;
+  transform: translate(var(--cursor-offset-x), var(--cursor-offset-y)) scale(var(--cursor-pressed-scale, .82)) !important;
 }
 
 /* Do not tint user-selected background colors with a fixed gray/beige texture. */
