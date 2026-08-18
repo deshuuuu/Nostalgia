@@ -118,7 +118,6 @@
     chapters.forEach((chapter, index) => {
       const details = document.createElement('details');
       details.className = 'story-card';
-      if (index === 0) details.open = true;
       const summary = document.createElement('summary');
       summary.textContent = chapter.title || `CHAPTER ${index + 1}`;
       const body = document.createElement('div');
