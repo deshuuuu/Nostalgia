@@ -1,0 +1,22 @@
+/* Navigation state: only the current page is accent-colored. */
+.top-nav .nav-button {
+  color: #aaa99f !important;
+}
+
+.top-nav .nav-button:hover,
+.top-nav .nav-button:focus,
+.top-nav .nav-button:focus-visible {
+  color: #aaa99f !important;
+}
+
+.top-nav .nav-button.active,
+.top-nav .nav-button.active:hover,
+.top-nav .nav-button.active:focus,
+.top-nav .nav-button.active:focus-visible {
+  color: var(--accent) !important;
+}
+
+/* Hover can stay subtly visible without looking selected. */
+.top-nav .nav-button:not(.active):hover {
+  background: rgba(223,215,181,.035) !important;
+}
