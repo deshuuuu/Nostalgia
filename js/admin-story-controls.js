@@ -144,6 +144,15 @@
     return row;
   }
 
+  function makeEmptySentinel() {
+    const row = document.createElement('div');
+    row.className = 'story-row story-delete-sentinel';
+    row.hidden = true;
+    row.setAttribute('aria-hidden', 'true');
+    row.innerHTML = '<input class="story-title" type="hidden" value=""><textarea class="story-body" hidden></textarea><input class="story-locked" type="checkbox" hidden>';
+    return row;
+  }
+
   function renderStoryEditor() {
     const editor = $('#storyEditor');
     if (!editor || !loaded) return;
@@ -151,6 +160,7 @@
     editor.innerHTML = '';
 
     if (!storyDraft.length) {
+      editor.appendChild(makeEmptySentinel());
       const empty = document.createElement('div');
       empty.className = 'story-admin-empty muted';
       empty.style.cssText = 'padding:18px;border:1px dashed rgba(226,220,190,.18);text-align:center';
@@ -175,7 +185,7 @@
       storyDraft.push({ title: '', body: '', locked: false });
       markDirty();
       renderStoryEditor();
-      $('#storyEditor .story-row:last-child .story-title')?.focus();
+      $('#storyEditor .story-managed-row:last-child .story-title')?.focus();
     }, true);
   }
 
