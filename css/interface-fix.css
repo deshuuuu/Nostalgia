@@ -1,0 +1,144 @@
+/* Interface alignment fixes: cursor hotspot + compact music widget layout. */
+
+/* The default cursor's visible tip sits around x=20%, y=11% of the image.
+   Align that tip with the real browser pointer instead of centering the image. */
+.custom-cursor {
+  --cursor-hotspot-x: 20.3%;
+  --cursor-hotspot-y: 10.9%;
+  transform: translate(calc(-1 * var(--cursor-hotspot-x)), calc(-1 * var(--cursor-hotspot-y))) scale(1) !important;
+  transform-origin: var(--cursor-hotspot-x) var(--cursor-hotspot-y) !important;
+}
+.custom-cursor.pressed {
+  transform: translate(calc(-1 * var(--cursor-hotspot-x)), calc(-1 * var(--cursor-hotspot-y))) scale(var(--cursor-pressed-scale, .82)) !important;
+}
+
+/* Music widget: reference-like compact layout. */
+#musicWidget {
+  width: 282px !important;
+  overflow: visible !important;
+}
+#musicWidget .widget-body {
+  padding: 14px !important;
+}
+#musicWidget .music-top-v2 {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  min-height: 56px;
+}
+#musicWidget .music-top-v2 .music-cover {
+  float: none !important;
+  width: 54px !important;
+  height: 54px !important;
+  margin: 0 !important;
+}
+#musicWidget .music-top-v2 .music-meta {
+  min-height: 54px !important;
+  justify-content: center !important;
+}
+#musicWidget .music-top-v2 .mini-label {
+  margin-bottom: 1px;
+  line-height: 1.15;
+}
+#musicWidget .music-top-v2 #widgetTrackTitle {
+  display: block;
+  margin-top: 0;
+  font-size: 13px;
+  line-height: 1.12;
+}
+#musicWidget .music-top-v2 #widgetTrackArtist {
+  display: block;
+  margin-top: 3px;
+  line-height: 1.15;
+}
+
+#musicWidget .playlist-progress-row {
+  clear: both;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  margin: 11px 0 0 !important;
+  padding: 0 !important;
+}
+#musicWidget .playlist-progress-row #widgetProgress {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+#musicWidget .playlist-progress-row #widgetTime {
+  min-width: 64px;
+  margin: 0;
+  color: #aaa89e;
+  font-size: 9px;
+  line-height: 1;
+  text-align: right;
+  white-space: nowrap;
+}
+
+#musicWidget .playlist-controls {
+  display: grid !important;
+  grid-template-columns: 31px 31px 31px 46px minmax(64px, 1fr);
+  gap: 6px !important;
+  align-items: center;
+  margin: 12px 0 0 !important;
+  padding: 0 !important;
+}
+#musicWidget .playlist-control {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 31px;
+  height: 31px !important;
+  min-width: 0;
+  padding: 0 !important;
+  line-height: 1 !important;
+  box-sizing: border-box;
+  border: 1px solid rgba(226,220,191,.25) !important;
+  background: rgba(226,220,191,.045) !important;
+  color: var(--accent-soft,#ebe4c2) !important;
+  font: 600 11px/1 Georgia,serif !important;
+}
+#musicWidget .playlist-list-button {
+  width: 46px !important;
+  font-size: 9px !important;
+  letter-spacing: .06em !important;
+}
+#musicWidget .music-volume-v2 {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 31px;
+}
+#musicWidget .music-volume-v2 #widgetVolume {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+#musicWidget .legacy-bgm-row,
+#musicWidget .music-old-compact-row {
+  display: none !important;
+}
+
+#musicWidget .playlist-panel {
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 38px;
+  width: 248px;
+  max-height: 330px;
+  overflow: auto;
+  z-index: 9999;
+}
+
+@media (max-width: 760px) {
+  #musicWidget {
+    width: 282px !important;
+  }
+  #musicWidget .playlist-panel {
+    left: 0;
+    top: calc(100% + 8px);
+    width: 100%;
+  }
+}
