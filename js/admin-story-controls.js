@@ -3,19 +3,36 @@
 
   const cfg = window.APP_CONFIG || {};
   let loaded = false;
+  let loading = false;
   let storySnapshot = [];
+  let storyDraft = [];
   let settingsSnapshot = {};
+  let storyDirty = false;
+  let rendering = false;
+
+  const $ = (s, root = document) => root.querySelector(s);
+
+  function cloneStory(list) {
+    return Array.isArray(list)
+      ? list.map(item => ({
+          title: String(item?.title || ''),
+          body: String(item?.body || ''),
+          locked: Boolean(item?.locked)
+        }))
+      : [];
+  }
 
   function markDirty() {
-    const status = document.getElementById('saveStatus');
+    storyDirty = true;
+    const status = $('#saveStatus');
     if (status && !/저장 중|업로드/.test(status.textContent || '')) status.textContent = '저장 필요';
   }
 
   function addSiteControls() {
-    const card = document.querySelector('[data-tab-panel="site"] .admin-card');
-    if (!card || document.getElementById('homeEyebrowInput')) return;
+    const card = $('[data-tab-panel="site"] .admin-card');
+    if (!card || $('#homeEyebrowInput')) return;
 
-    const anchor = document.getElementById('entryKickerInput')?.closest('label') || card.firstElementChild;
+    const anchor = $('#entryKickerInput')?.closest('label') || card.firstElementChild;
     const wrap = document.createElement('div');
     wrap.id = 'archiveTextControls';
     wrap.style.cssText = 'margin:14px 0 16px;padding:14px;border:1px solid rgba(226,220,190,.18);background:rgba(255,255,255,.02)';
@@ -27,19 +44,25 @@
     if (anchor?.parentNode) anchor.parentNode.insertBefore(wrap, anchor);
     else card.appendChild(wrap);
 
-    const home = document.getElementById('homeEyebrowInput');
-    const footer = document.getElementById('footerArchiveInput');
+    const home = $('#homeEyebrowInput');
+    const footer = $('#footerArchiveInput');
     home.value = settingsSnapshot.home_eyebrow ?? 'WELCOME TO THE ARCHIVE';
     footer.value = settingsSnapshot.footer_archive_text ?? '';
     [home, footer].forEach(input => {
-      input.addEventListener('input', markDirty);
-      input.addEventListener('change', markDirty);
+      input.addEventListener('input', () => {
+        const status = $('#saveStatus');
+        if (status) status.textContent = '저장 필요';
+      });
+      input.addEventListener('change', () => {
+        const status = $('#saveStatus');
+        if (status) status.textContent = '저장 필요';
+      });
     });
   }
 
   function addStoryPasswordControl() {
-    const card = document.querySelector('[data-tab-panel="story"] .admin-card');
-    if (!card || document.getElementById('storyPasswordInput')) return;
+    const card = $('[data-tab-panel="story"] .admin-card');
+    if (!card || $('#storyPasswordInput')) return;
 
     const box = document.createElement('div');
     box.id = 'storyLockSettings';
@@ -51,32 +74,125 @@
       <p class="muted" style="margin-bottom:0">본문 서식: <code>*기울임*</code> / <code>**굵게**</code></p>`;
     card.insertBefore(box, card.firstChild);
 
-    const input = document.getElementById('storyPasswordInput');
+    const input = $('#storyPasswordInput');
     input.value = settingsSnapshot.story_password ?? '';
-    input.addEventListener('input', markDirty);
-    input.addEventListener('change', markDirty);
-  }
-
-  function decorateStoryRows() {
-    const rows = [...document.querySelectorAll('.story-row')];
-    rows.forEach((row, index) => {
-      if (row.querySelector('.story-locked')) return;
-      const title = row.querySelector('.story-title');
-      const locked = Boolean(storySnapshot[index]?.locked);
-      const label = document.createElement('label');
-      label.className = 'check-row story-lock-row';
-      label.style.cssText = 'grid-column:1 / -1;margin:2px 0 4px;padding:8px 10px;border:1px solid rgba(226,220,190,.14);background:rgba(255,255,255,.018)';
-      label.innerHTML = `<input class="story-locked" type="checkbox" ${locked ? 'checked' : ''}> 비밀번호 필요 🔒`;
-      const body = row.querySelector('.story-body');
-      if (body) row.insertBefore(label, body);
-      else if (title) title.after(label);
-      else row.appendChild(label);
-      label.querySelector('input').addEventListener('change', markDirty);
+    input.addEventListener('input', () => {
+      const status = $('#saveStatus');
+      if (status) status.textContent = '저장 필요';
+    });
+    input.addEventListener('change', () => {
+      const status = $('#saveStatus');
+      if (status) status.textContent = '저장 필요';
     });
   }
 
-  async function loadLatest() {
-    if (!window.db || !window.SUPABASE_CONFIGURED) return;
+  function makeStoryRow(chapter, index) {
+    const row = document.createElement('div');
+    row.className = 'editor-row story-row story-managed-row';
+    row.dataset.storyIndex = String(index);
+
+    const title = document.createElement('input');
+    title.className = 'story-title';
+    title.type = 'text';
+    title.placeholder = '챕터 제목';
+    title.value = chapter.title || '';
+
+    const remove = document.createElement('button');
+    remove.className = 'remove-button';
+    remove.type = 'button';
+    remove.title = '삭제';
+    remove.textContent = '×';
+
+    const lockLabel = document.createElement('label');
+    lockLabel.className = 'check-row story-lock-row';
+    lockLabel.style.cssText = 'grid-column:1 / -1;margin:2px 0 4px;padding:8px 10px;border:1px solid rgba(226,220,190,.14);background:rgba(255,255,255,.018)';
+    const locked = document.createElement('input');
+    locked.className = 'story-locked';
+    locked.type = 'checkbox';
+    locked.checked = Boolean(chapter.locked);
+    lockLabel.append(locked, document.createTextNode(' 비밀번호 필요 🔒'));
+
+    const body = document.createElement('textarea');
+    body.className = 'story-body';
+    body.rows = 9;
+    body.placeholder = '스토리 본문';
+    body.value = chapter.body || '';
+
+    title.addEventListener('input', event => {
+      if (rendering || !event.isTrusted) return;
+      storyDraft[index].title = title.value;
+      markDirty();
+    });
+    body.addEventListener('input', event => {
+      if (rendering || !event.isTrusted) return;
+      storyDraft[index].body = body.value;
+      markDirty();
+    });
+    locked.addEventListener('change', event => {
+      if (rendering || !event.isTrusted) return;
+      storyDraft[index].locked = locked.checked;
+      markDirty();
+    });
+    remove.addEventListener('click', event => {
+      if (!event.isTrusted) return;
+      storyDraft.splice(index, 1);
+      markDirty();
+      renderStoryEditor();
+    });
+
+    row.append(title, remove, lockLabel, body);
+    return row;
+  }
+
+  function renderStoryEditor() {
+    const editor = $('#storyEditor');
+    if (!editor || !loaded) return;
+    rendering = true;
+    editor.innerHTML = '';
+
+    if (!storyDraft.length) {
+      const empty = document.createElement('div');
+      empty.className = 'story-admin-empty muted';
+      empty.style.cssText = 'padding:18px;border:1px dashed rgba(226,220,190,.18);text-align:center';
+      empty.textContent = '등록된 스토리 챕터가 없습니다. + 챕터 추가로 새 챕터를 만들 수 있습니다.';
+      editor.appendChild(empty);
+    } else {
+      storyDraft.forEach((chapter, index) => editor.appendChild(makeStoryRow(chapter, index)));
+    }
+
+    rendering = false;
+  }
+
+  function bindAddButton() {
+    const button = $('#addStoryChapter');
+    if (!button || button.dataset.storyManaged === '1') return;
+    button.dataset.storyManaged = '1';
+
+    button.addEventListener('click', event => {
+      if (!event.isTrusted) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      storyDraft.push({ title: '', body: '', locked: false });
+      markDirty();
+      renderStoryEditor();
+      $('#storyEditor .story-row:last-child .story-title')?.focus();
+    }, true);
+  }
+
+  function restoreEditorIfMissing() {
+    if (!loaded || rendering) return;
+    const editor = $('#storyEditor');
+    if (!editor) return;
+    const expectedRows = storyDraft.length;
+    const actualRows = editor.querySelectorAll('.story-managed-row').length;
+    if ((expectedRows && actualRows !== expectedRows) || (!expectedRows && !editor.querySelector('.story-admin-empty'))) {
+      renderStoryEditor();
+    }
+  }
+
+  async function loadLatest(force = false) {
+    if ((!force && loaded) || loading || !window.db || !window.SUPABASE_CONFIGURED) return;
+    loading = true;
     try {
       const { data, error } = await window.db
         .from('site_content')
@@ -84,35 +200,66 @@
         .eq('id', cfg.siteId || 1)
         .single();
       if (error) throw error;
-      storySnapshot = Array.isArray(data?.story_json) ? data.story_json : [];
+      storySnapshot = cloneStory(data?.story_json);
+      storyDraft = cloneStory(storySnapshot);
       settingsSnapshot = data?.settings_json || {};
+      loaded = true;
+      storyDirty = false;
+      addSiteControls();
+      addStoryPasswordControl();
+      bindAddButton();
+      renderStoryEditor();
     } catch (error) {
-      console.warn('스토리 잠금 설정을 불러오지 못했습니다.', error);
+      console.warn('스토리 관리자 데이터를 불러오지 못했습니다.', error);
+    } finally {
+      loading = false;
     }
   }
 
   async function activate() {
-    const app = document.getElementById('adminApp');
+    const app = $('#adminApp');
     if (!app || app.classList.contains('hidden')) return;
-    if (!loaded) {
-      loaded = true;
-      await loadLatest();
-    }
+    await loadLatest(false);
     addSiteControls();
     addStoryPasswordControl();
-    decorateStoryRows();
+    bindAddButton();
+    restoreEditorIfMissing();
   }
 
-  const observer = new MutationObserver(() => {
-    const app = document.getElementById('adminApp');
-    if (!app || app.classList.contains('hidden')) return;
-    setTimeout(() => {
-      addSiteControls();
-      addStoryPasswordControl();
-      decorateStoryRows();
-    }, 0);
+  const app = $('#adminApp');
+  if (app) {
+    const appObserver = new MutationObserver(() => {
+      if (!app.classList.contains('hidden')) setTimeout(activate, 50);
+    });
+    appObserver.observe(app, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  const storyPanel = $('[data-tab-panel="story"]');
+  if (storyPanel) {
+    const editorObserver = new MutationObserver(() => {
+      if (!rendering) setTimeout(restoreEditorIfMissing, 0);
+    });
+    editorObserver.observe(storyPanel, { childList: true, subtree: true });
+  }
+
+  $('#adminNav [data-tab="story"]')?.addEventListener('click', () => {
+    setTimeout(async () => {
+      if (!loaded) await loadLatest(false);
+      restoreEditorIfMissing();
+    }, 80);
   });
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+
+  window.nostalgiaStoryGetDraft = () => cloneStory(storyDraft);
+  window.nostalgiaStoryEditorLoaded = () => loaded;
+  window.nostalgiaStoryWasEdited = () => storyDirty;
+  window.nostalgiaStoryMarkSaved = story => {
+    storySnapshot = cloneStory(story);
+    storyDraft = cloneStory(storySnapshot);
+    storyDirty = false;
+    loaded = true;
+    renderStoryEditor();
+  };
+  window.nostalgiaStoryReloadFromDb = () => loadLatest(true);
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', activate, { once: true });
