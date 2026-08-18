@@ -1,22 +1,33 @@
-/* Full-body friendly PROFILE image panel. */
+/* PROFILE: free-standing full-body image, no boxed frame. */
 .profile-layout {
-  grid-template-columns: minmax(300px, 410px) minmax(0, 1fr) !important;
-  gap: 48px !important;
+  grid-template-columns: minmax(300px, 390px) minmax(0, 1fr) !important;
+  gap: 56px !important;
   align-items: start !important;
 }
 
 .profile-image-panel {
   width: 100% !important;
-  aspect-ratio: 9 / 16 !important;
+  height: auto !important;
   min-height: 0 !important;
-  max-height: 800px !important;
-  overflow: hidden !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;
+  overflow: visible !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.profile-image-panel::after {
+  display: none !important;
 }
 
 .profile-image-panel img {
   display: block !important;
   width: 100% !important;
-  height: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: none !important;
   object-fit: contain !important;
   object-position: center top !important;
   filter: none !important;
@@ -29,8 +40,7 @@
   }
 
   .profile-image-panel {
-    width: min(100%, 430px) !important;
-    max-height: 74vh !important;
+    width: min(100%, 390px) !important;
     margin: 0 auto !important;
   }
 }
