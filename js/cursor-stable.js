@@ -7,10 +7,10 @@
   const cfg = window.APP_CONFIG || {};
   const state = {
     cursorUrl: 'assets/default-cursor.svg',
-    cursorSize: 56,
+    cursorSize: 32,
     trailStyle: 'sparkle',
-    trailSpacing: 10,
-    trailSize: 14,
+    trailSpacing: 12,
+    trailSize: 13,
     trailFade: 520,
     trailImageUrl: ''
   };
@@ -121,9 +121,8 @@
 
   function applyPointerVisual() {
     const { pointer } = ensureElements();
-    const configured = Number(state.cursorSize);
-    // Keep the cursor comfortably visible even if the old 34px default was restored.
-    const size = !Number.isFinite(configured) ? 56 : Math.max(56, Math.min(160, configured));
+    // Respect the admin value exactly. No forced minimum enlargement.
+    const size = clamp(state.cursorSize, 12, 160, 32);
     const url = publicUrl(state.cursorUrl) || 'assets/default-cursor.svg';
 
     pointer.style.width = `${size}px`;
@@ -140,7 +139,7 @@
   function makeTrail(x, y) {
     const dx = x - lastTrailX;
     const dy = y - lastTrailY;
-    const spacing = clamp(state.trailSpacing, 4, 60, 10);
+    const spacing = clamp(state.trailSpacing, 2, 80, 12);
     if (Math.hypot(dx, dy) < spacing) return;
     lastTrailX = x;
     lastTrailY = y;
@@ -148,8 +147,8 @@
     const { layer } = ensureElements();
     const node = document.createElement('span');
     let style = ['sparkle', 'star', 'dot', 'glow', 'image'].includes(state.trailStyle) ? state.trailStyle : 'sparkle';
-    const size = clamp(state.trailSize, 5, 60, 14);
-    const duration = clamp(state.trailFade, 180, 2500, 520);
+    const size = clamp(state.trailSize, 2, 80, 13);
+    const duration = clamp(state.trailFade, 100, 3000, 520);
 
     node.style.position = 'fixed';
     node.style.left = `${x}px`;
@@ -158,24 +157,25 @@
     node.style.height = `${size}px`;
     node.style.pointerEvents = 'none';
     node.style.transform = 'translate(-50%, -50%) scale(1)';
-    node.style.opacity = '.9';
+    node.style.opacity = '.58';
     node.style.color = 'var(--accent, #d9d0a4)';
     node.style.fontFamily = 'Georgia, "Times New Roman", serif';
     node.style.fontSize = `${size}px`;
     node.style.lineHeight = '1';
     node.style.display = 'grid';
     node.style.placeItems = 'center';
-    node.style.textShadow = '0 0 10px currentColor';
 
     if (style === 'dot') {
       node.style.borderRadius = '50%';
       node.style.background = 'var(--accent, #d9d0a4)';
-      node.style.boxShadow = '0 0 8px var(--accent, #d9d0a4)';
+      node.style.opacity = '.34';
+      node.style.boxShadow = '0 0 5px color-mix(in srgb, var(--accent,#d9d0a4) 42%, transparent)';
     } else if (style === 'glow') {
       node.style.borderRadius = '50%';
       node.style.background = 'var(--accent, #d9d0a4)';
+      node.style.opacity = '.28';
       node.style.filter = 'blur(4px)';
-      node.style.boxShadow = '0 0 16px var(--accent, #d9d0a4)';
+      node.style.boxShadow = '0 0 9px color-mix(in srgb, var(--accent,#d9d0a4) 38%, transparent)';
     } else if (style === 'image') {
       const url = publicUrl(state.trailImageUrl);
       if (url) {
@@ -183,30 +183,34 @@
         node.style.backgroundRepeat = 'no-repeat';
         node.style.backgroundPosition = 'center';
         node.style.backgroundSize = 'contain';
+        node.style.opacity = '.52';
       } else {
         style = 'sparkle';
         node.textContent = '✦';
+        node.style.textShadow = '0 0 6px color-mix(in srgb, var(--accent,#d9d0a4) 42%, transparent)';
       }
     } else {
       node.textContent = style === 'star' ? '✧' : '✦';
+      node.style.textShadow = '0 0 6px color-mix(in srgb, var(--accent,#d9d0a4) 42%, transparent)';
     }
 
     layer.appendChild(node);
 
+    const baseOpacity = Number(node.style.opacity || .58);
     const start = performance.now();
     function frame(now) {
       if (!node.isConnected) return;
       const t = Math.min(1, (now - start) / duration);
-      const eased = 1 - Math.pow(1 - t, 2);
-      node.style.opacity = String(.9 * (1 - eased));
-      const scale = 1 - (.72 * eased);
-      const rotate = 18 * eased;
-      node.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${rotate}deg)`;
+      // Gentle fade: stays visible briefly, then dissolves without popping.
+      const fade = t < .18 ? t * .35 : .063 + ((t - .18) / .82) * .937;
+      node.style.opacity = String(baseOpacity * Math.max(0, 1 - fade));
+      const scale = 1 - (.52 * t);
+      node.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${7 * t}deg)`;
       if (t < 1) requestAnimationFrame(frame);
       else node.remove();
     }
     requestAnimationFrame(frame);
-    setTimeout(() => node.remove(), duration + 200);
+    setTimeout(() => node.remove(), duration + 160);
   }
 
   function makeClickParticles(x, y) {
@@ -227,8 +231,8 @@
       node.style.color = 'var(--accent, #d9d0a4)';
       node.style.fontSize = `${8 + Math.random() * 7}px`;
       node.style.lineHeight = '1';
-      node.style.textShadow = '0 0 8px currentColor';
-      node.style.opacity = '.95';
+      node.style.textShadow = '0 0 6px color-mix(in srgb, var(--accent,#d9d0a4) 48%, transparent)';
+      node.style.opacity = '.82';
       node.style.transform = 'translate(-50%, -50%) scale(.6)';
       layer.appendChild(node);
 
@@ -238,7 +242,7 @@
         if (!node.isConnected) return;
         const t = Math.min(1, (now - start) / duration);
         const eased = 1 - Math.pow(1 - t, 3);
-        node.style.opacity = String(.95 * (1 - t));
+        node.style.opacity = String(.82 * (1 - t));
         node.style.transform = `translate(-50%, -50%) translate(${targetX * eased}px, ${targetY * eased}px) scale(${.6 + .45 * eased}) rotate(${spin * eased}deg)`;
         if (t < 1) requestAnimationFrame(frame);
         else node.remove();
@@ -295,10 +299,8 @@
   ensureElements();
   applyPointerVisual();
 
-  // mousemove is intentionally used here instead of the previous pointermove chain.
-  // It remains active through the ENTER overlay transition on desktop browsers.
+  // mousemove remains active through the ENTER overlay transition on desktop browsers.
   document.addEventListener('mousemove', onMouseMove, true);
-  window.addEventListener('mousemove', onMouseMove, true);
 
   document.addEventListener('mousedown', event => {
     makeClickParticles(event.clientX, event.clientY);
