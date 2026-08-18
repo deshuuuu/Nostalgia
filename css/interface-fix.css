@@ -91,23 +91,25 @@ body::before {
   line-height: 1.15;
 }
 
+/* Progress occupies the whole line; time sits just beneath it on the right. */
 #musicWidget .playlist-progress-row {
   clear: both;
   display: grid !important;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 4px !important;
   align-items: center;
   margin: 11px 0 0 !important;
   padding: 0 !important;
 }
 #musicWidget .playlist-progress-row #widgetProgress {
-  width: 100%;
+  width: 100% !important;
   min-width: 0;
-  margin: 0;
+  margin: 0 !important;
 }
 #musicWidget .playlist-progress-row #widgetTime {
+  justify-self: end;
   min-width: 64px;
-  margin: 0;
+  margin: 0 !important;
   color: #aaa89e;
   font-size: 9px;
   line-height: 1;
@@ -115,21 +117,24 @@ body::before {
   white-space: nowrap;
 }
 
+/* Keep transport buttons and volume on exactly one row. */
 #musicWidget .playlist-controls {
-  display: grid !important;
-  grid-template-columns: 31px 31px 31px 46px minmax(64px, 1fr);
+  display: flex !important;
+  flex-wrap: nowrap !important;
   gap: 6px !important;
-  align-items: center;
-  margin: 12px 0 0 !important;
+  align-items: center !important;
+  width: 100% !important;
+  margin: 10px 0 0 !important;
   padding: 0 !important;
 }
 #musicWidget .playlist-control {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 31px;
+  flex: 0 0 31px !important;
+  width: 31px !important;
   height: 31px !important;
-  min-width: 0;
+  min-width: 31px !important;
   padding: 0 !important;
   line-height: 1 !important;
   box-sizing: border-box;
@@ -139,36 +144,71 @@ body::before {
   font: 600 11px/1 Georgia,serif !important;
 }
 #musicWidget .playlist-list-button {
+  flex-basis: 46px !important;
   width: 46px !important;
+  min-width: 46px !important;
   font-size: 9px !important;
   letter-spacing: .06em !important;
 }
 #musicWidget .music-volume-v2 {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  height: 31px;
+  flex: 1 1 auto !important;
+  min-width: 64px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  height: 31px !important;
+  margin-left: 2px !important;
 }
 #musicWidget .music-volume-v2 #widgetVolume {
-  width: 100%;
-  min-width: 0;
-  margin: 0;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
 }
 
-/* Progress and volume bars use the site's point color instead of browser blue. */
+/* Progress and volume bars follow the site's point color, never browser blue. */
 #musicWidget input[type="range"] {
-  accent-color: var(--accent) !important;
+  --range-accent: var(--accent, #d9d0a4);
+  --range-track: rgba(238,234,216,.78);
+  accent-color: var(--range-accent) !important;
+  appearance: none;
+  -webkit-appearance: none;
+  height: 14px;
+  background: transparent;
+}
+#musicWidget input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--range-track);
+  border: 0;
 }
 #musicWidget input[type="range"]::-webkit-slider-thumb {
-  background-color: var(--accent) !important;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--range-accent) !important;
+  box-shadow: none;
 }
-#musicWidget input[type="range"]::-moz-range-thumb {
-  background-color: var(--accent) !important;
-  border-color: var(--accent) !important;
+#musicWidget input[type="range"]::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--range-track);
+  border: 0;
 }
 #musicWidget input[type="range"]::-moz-range-progress {
-  background-color: var(--accent) !important;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--range-accent) !important;
+}
+#musicWidget input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 0 !important;
+  border-radius: 50%;
+  background: var(--range-accent) !important;
 }
 
 #musicWidget .legacy-bgm-row,
