@@ -1,13 +1,18 @@
 (function () {
   'use strict';
 
-  // Safety guard: prevent stale autosaves from overwriting newer settings_json keys.
-  if (!document.querySelector('script[data-nostalgia-safe-save]')) {
+  function loadHelper(src, marker) {
+    if (document.querySelector(`script[data-${marker}]`)) return;
     const script = document.createElement('script');
-    script.src = '../js/admin-safe-save.js?v=20260818-19';
-    script.dataset.nostalgiaSafeSave = '1';
+    script.src = src;
+    script.setAttribute(`data-${marker}`, '1');
     document.head.appendChild(script);
   }
+
+  // Safety first: block stale programmatic full-saves and preserve current DB keys.
+  loadHelper('../js/admin-safe-save.js?v=20260818-19', 'nostalgia-safe-save');
+  // Recovery helper only writes when the user explicitly presses its recovery button.
+  loadHelper('../js/admin-media-recovery.js?v=20260818-19', 'nostalgia-media-recovery');
 
   const cfg = window.APP_CONFIG || {};
   let timer = null;
@@ -68,7 +73,6 @@
       console.error(error);
     }
 
-    // Own accent saving exclusively so the legacy autosave cannot write a stale settings snapshot afterward.
     ['input', 'change'].forEach(type => {
       input.addEventListener(type, event => {
         event.stopImmediatePropagation();
