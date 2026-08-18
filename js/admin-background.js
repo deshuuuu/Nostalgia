@@ -5,9 +5,9 @@
   let initialized = false;
   let saveTimer = null;
   let current = {
-    enabled: true,
+    enabled: false,
     start: '#55564f',
-    end: '#3f413c',
+    end: '#55564f',
     angle: 180
   };
 
@@ -72,7 +72,7 @@
       preview.style.background = current.enabled
         ? `linear-gradient(${current.angle}deg, ${current.start}, ${current.end})`
         : current.start;
-      preview.style.opacity = current.enabled ? '1' : '.72';
+      preview.style.opacity = '1';
     }
     if (angleInput) angleInput.disabled = !current.enabled;
   }
@@ -82,9 +82,10 @@
     const bgInput = document.getElementById('backgroundColorInput');
     if (!panel || !bgInput || document.getElementById('backgroundGradientControls')) return;
 
-    current.enabled = settings.background_gradient_enabled !== false;
-    current.start = normalizeHex(settings.background_gradient_start, normalizeHex(settings.background_color, '#55564f'));
-    current.end = normalizeHex(settings.background_gradient_end, '#3f413c');
+    const base = normalizeHex(settings.background_color, '#55564f');
+    current.enabled = settings.background_gradient_enabled === true;
+    current.start = normalizeHex(settings.background_gradient_start, base);
+    current.end = normalizeHex(settings.background_gradient_end, current.start);
     const angle = Number(settings.background_gradient_angle ?? 180);
     current.angle = Number.isFinite(angle) ? Math.max(0, Math.min(360, angle)) : 180;
 
@@ -104,7 +105,7 @@
       <label>방향 <span id="backgroundGradientAngleLabel"></span>
         <input id="backgroundGradientAngleInput" type="range" min="0" max="360" step="1">
       </label>
-      <p class="muted" style="margin-bottom:0">그라데이션을 끄면 배경은 기본 배경색 한 가지로 표시되고, 은은한 질감 레이어만 남습니다.</p>`;
+      <p class="muted" style="margin-bottom:0">그라데이션 OFF면 ‘배경 컬러’ 한 색만 그대로 사용합니다. ON이면 시작색/끝색만 사용하며 고정 회색은 섞지 않습니다.</p>`;
 
     const anchor = bgInput.closest('label');
     anchor?.after(box);
@@ -141,12 +142,15 @@
       scheduleSave();
     });
 
+    /* Changing the main background color should always produce a visible change.
+       When gradient is on, use the new base as the gradient start; the user can then fine-tune it separately. */
     bgInput.addEventListener('input', () => {
-      if (!current.enabled) {
-        current.start = normalizeHex(bgInput.value, current.start);
-        start.value = current.start;
-        updatePreview();
-      }
+      current.start = normalizeHex(bgInput.value, current.start);
+      start.value = current.start;
+      if (!current.enabled) current.end = current.start;
+      if (!current.enabled) end.value = current.end;
+      updatePreview();
+      scheduleSave();
     });
   }
 
