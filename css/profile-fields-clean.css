@@ -1,29 +1,92 @@
-/* PROFILE: keep added fields visually consistent with the rest of the clean profile layout. */
+/* PROFILE: FFXIV-inspired archive rows with clear labels and restrained dividers. */
 .profile-fields {
-  margin-top: 30px !important;
+  margin-top: 32px !important;
   display: grid !important;
-  gap: 14px !important;
-  border-top: 0 !important;
-  border-bottom: 0 !important;
+  gap: 0 !important;
+  border-top: 1px solid color-mix(in srgb, var(--accent) 24%, transparent) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 18%, transparent) !important;
 }
 
 .profile-field {
+  position: relative !important;
   display: grid !important;
-  grid-template-columns: minmax(120px, .32fr) 1fr !important;
-  gap: 24px !important;
-  padding: 0 !important;
+  grid-template-columns: minmax(168px, .34fr) minmax(0, 1fr) !important;
+  gap: 30px !important;
+  align-items: start !important;
+  padding: 22px 4px 23px !important;
   border: 0 !important;
+  border-bottom: 1px solid rgba(224, 217, 185, .12) !important;
   background: transparent !important;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .08) !important;
+}
+
+.profile-field:last-child {
+  border-bottom: 0 !important;
   box-shadow: none !important;
 }
 
 .profile-field:nth-child(odd) {
-  background: transparent !important;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 3.5%, transparent), transparent 52%) !important;
+}
+
+.profile-field dt {
+  position: relative !important;
+  margin: 0 !important;
+  padding: 2px 10px 13px 20px !important;
+  color: var(--accent-soft) !important;
+  font-family: var(--serif) !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+  letter-spacing: .145em !important;
+  text-transform: uppercase !important;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .24) !important;
+}
+
+.profile-field dt::before {
+  content: "◆";
+  position: absolute;
+  left: 1px;
+  top: 4px;
+  color: var(--accent) !important;
+  font-size: 7px;
+  opacity: .82;
+}
+
+.profile-field dt::after {
+  content: "";
+  position: absolute;
+  left: 20px;
+  right: 28px;
+  bottom: 5px;
+  height: 1px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 58%, transparent), transparent);
+  opacity: .7;
+}
+
+.profile-field dd {
+  margin: 0 !important;
+  padding: 0 2px !important;
+  color: #d0ccbd !important;
+  font-size: 15px !important;
+  line-height: 1.95 !important;
+  white-space: pre-wrap !important;
+  word-break: keep-all !important;
 }
 
 @media (max-width: 680px) {
   .profile-field {
     grid-template-columns: 1fr !important;
-    gap: 5px !important;
+    gap: 9px !important;
+    padding: 18px 2px 19px !important;
+  }
+
+  .profile-field dt {
+    width: min(230px, 100%);
+    font-size: 15px !important;
+  }
+
+  .profile-field dd {
+    padding-left: 20px !important;
   }
 }
