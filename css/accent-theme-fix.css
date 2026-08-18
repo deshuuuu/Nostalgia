@@ -28,8 +28,7 @@
 .status-dot,
 .character-frame::after,
 .story-card summary::after,
-.top-nav .nav-button.active,
-.top-nav .nav-button:hover {
+.top-nav .nav-button.active {
   color: var(--accent) !important;
 }
 
@@ -46,7 +45,7 @@
 
 .primary-button::before,
 .primary-button::after,
-.top-nav .nav-button::after {
+.top-nav .nav-button.active::after {
   background-color: var(--accent) !important;
 }
 
