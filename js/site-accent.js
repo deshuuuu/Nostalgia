@@ -32,6 +32,14 @@
     });
   }
 
+  function clearNavInlineColors() {
+    document.querySelectorAll('.top-nav .nav-button').forEach(button => {
+      button.style.removeProperty('color');
+      button.style.removeProperty('background');
+      button.style.removeProperty('background-color');
+    });
+  }
+
   function applyAccent(accent) {
     const root = document.documentElement;
     const soft = mix(accent, '#ffffff', 0.24);
@@ -61,21 +69,22 @@
       '.mini-label',
       '.status-dot',
       '.character-frame::after',
-      '.story-card summary::after',
-      '.top-nav .nav-button.active',
-      '.top-nav .nav-button:hover'
+      '.story-card summary::after'
     ];
 
     softSelectors.forEach(selector => {
       document.querySelectorAll(selector).forEach(el => el.style.setProperty('color', soft, 'important'));
     });
 
+    // Navigation colors are intentionally NOT written inline.
+    // The active page is styled exclusively by nav-active-only.css so old pages cannot stay gold.
+    clearNavInlineColors();
+
     // Pseudo-elements cannot receive inline styles, but they already use --accent in CSS.
     directSelectors.filter(s => !s.includes('::')).forEach(selector => {
       document.querySelectorAll(selector).forEach(el => el.style.setProperty('color', accent, 'important'));
     });
 
-    // Make sure slider thumbs/tracks and decorative lines also follow the new point color.
     document.querySelectorAll('#musicWidget input[type="range"]').forEach(el => {
       el.style.setProperty('--range-accent', accent);
       el.style.setProperty('accent-color', accent, 'important');
