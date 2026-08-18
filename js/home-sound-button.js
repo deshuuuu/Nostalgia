@@ -18,28 +18,25 @@
       .home-sound-control {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
         margin: 0 0 16px;
       }
       .home-sound-button {
-        position: relative;
-        min-height: 38px;
-        padding: 0 16px;
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         border: 1px solid color-mix(in srgb, var(--accent, #d9d0a4) 46%, transparent);
         border-radius: 2px;
         background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(20,20,18,.08));
         color: var(--accent-soft, #ebe4c2);
         font-family: Georgia, "Times New Roman", serif;
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: .15em;
+        font-size: 14px;
+        line-height: 1;
         box-shadow: inset 0 0 0 1px rgba(255,255,255,.025);
-      }
-      .home-sound-button::before {
-        content: "◆";
-        margin-right: 9px;
-        color: var(--accent, #d9d0a4);
-        font-size: 7px;
       }
       .home-sound-button:hover {
         border-color: var(--accent, #d9d0a4);
@@ -49,6 +46,14 @@
         border-color: var(--accent, #d9d0a4);
         background: color-mix(in srgb, var(--accent, #d9d0a4) 10%, transparent);
       }
+      .home-sound-credit {
+        color: var(--muted, #bbb8aa);
+        font-size: 10px;
+        line-height: 1.4;
+        letter-spacing: .02em;
+        white-space: nowrap;
+        opacity: .82;
+      }
     `;
     document.head.appendChild(style);
   }
@@ -56,7 +61,7 @@
   function resetButton() {
     if (!button) return;
     button.classList.remove('is-playing');
-    button.textContent = '▶ PLAY SOUND';
+    button.textContent = '▶';
     button.setAttribute('aria-label', 'HOME 사운드 재생');
   }
 
@@ -81,8 +86,12 @@
     button = document.createElement('button');
     button.type = 'button';
     button.className = 'home-sound-button';
-    button.textContent = '▶ PLAY SOUND';
+    button.textContent = '▶';
     button.setAttribute('aria-label', 'HOME 사운드 재생');
+
+    const credit = document.createElement('span');
+    credit.className = 'home-sound-credit';
+    credit.textContent = 'cv. 희도님 보이스 커미션';
 
     audio = document.createElement('audio');
     audio.preload = 'metadata';
@@ -98,7 +107,7 @@
         audio.currentTime = 0;
         await audio.play();
         button.classList.add('is-playing');
-        button.textContent = '■ STOP SOUND';
+        button.textContent = '■';
         button.setAttribute('aria-label', 'HOME 사운드 정지');
       } catch (error) {
         console.warn('HOME 사운드를 재생하지 못했습니다.', error);
@@ -111,7 +120,7 @@
       if (audio.currentTime === 0 || audio.ended) resetButton();
     });
 
-    wrap.append(button, audio);
+    wrap.append(button, credit, audio);
     profileButton.before(wrap);
 
     const homePanel = document.querySelector('[data-page-panel="home"]');
