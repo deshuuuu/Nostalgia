@@ -1,4 +1,4 @@
-/* Gallery alignment: use a predictable row-based grid instead of CSS columns. */
+/* Gallery alignment: predictable rows with compact, equal-height thumbnails. */
 .gallery-grid {
   display: grid !important;
   grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
@@ -14,15 +14,19 @@
   break-inside: initial !important;
   padding: 5px !important;
   align-self: start;
+  overflow: hidden;
 }
 
+/* Keep portrait images from becoming huge in the gallery.
+   The full original ratio is still available in the click-to-open dialog. */
 .gallery-item img {
   display: block;
   width: 100% !important;
-  aspect-ratio: 4 / 5;
-  height: auto !important;
-  object-fit: cover;
-  object-position: center;
+  height: clamp(190px, 22vw, 270px) !important;
+  max-height: 270px !important;
+  aspect-ratio: auto !important;
+  object-fit: cover !important;
+  object-position: center 32% !important;
   filter: none !important;
 }
 
@@ -34,11 +38,19 @@
   .gallery-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
+  .gallery-item img {
+    height: clamp(190px, 36vw, 280px) !important;
+    max-height: 280px !important;
+  }
 }
 
 @media (max-width: 560px) {
   .gallery-grid {
     grid-template-columns: 1fr !important;
     gap: 12px !important;
+  }
+  .gallery-item img {
+    height: min(72vw, 320px) !important;
+    max-height: 320px !important;
   }
 }
