@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#55564f" />
   <title>Character Home · Admin</title>
-  <link rel="stylesheet" href="../css/admin.css" />
+  <link rel="stylesheet" href="../css/admin.css?v=20260818-3" />
 </head>
 <body>
   <div id="adminLogin" class="login-screen">
@@ -71,7 +71,7 @@
           </article>
           <article class="admin-card hint-card">
             <h3>사용 방법</h3>
-            <p>대표 이미지는 HOME과 PROFILE에 함께 사용됩니다. 이미지를 바꾸고 ‘전체 저장’을 누르면 공개 페이지에 반영됩니다.</p>
+            <p>대표 이미지는 HOME과 PROFILE에 함께 사용됩니다. 이미지를 선택하면 업로드 후 자동 저장됩니다.</p>
           </article>
         </div>
       </section>
@@ -221,6 +221,8 @@
             <label>ENTER 버튼 문구<input id="enterLabelInput" type="text" /></label>
             <label>포인트 컬러<input id="accentColorInput" type="color" /></label>
             <label>배경 컬러<input id="backgroundColorInput" type="color" /></label>
+            <p class="muted">첫 화면 문구/안내 문구/버튼 문구는 입력 후 다른 곳을 클릭하면 자동 저장됩니다.</p>
+            <p class="muted">첫 화면 이미지는 선택 후 업로드가 끝나면 자동 저장됩니다.</p>
             <p class="muted">첫 화면의 이름과 한마디는 CHARACTER 메뉴의 ‘캐릭터 이름’과 ‘한 줄 문구’를 그대로 사용합니다.</p>
           </article>
           <article class="admin-card danger-card">
@@ -236,9 +238,10 @@
   <div id="toast" class="toast" role="status"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="../js/config.js"></script>
-  <script src="../js/defaults.js"></script>
-  <script src="../js/supabase-client.js"></script>
-  <script src="../js/admin.js"></script>
+  <script src="../js/config.js?v=20260818-3"></script>
+  <script src="../js/defaults.js?v=20260818-3"></script>
+  <script src="../js/supabase-client.js?v=20260818-3"></script>
+  <script src="../js/admin.js?v=20260818-3"></script>
+  <script src="../js/admin-autosave.js?v=20260818-3"></script>
 </body>
 </html>
