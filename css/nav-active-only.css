@@ -1,28 +1,39 @@
-/* Navigation state: only the current page is accent-colored. */
-.top-nav .nav-button,
-.top-nav .nav-button:hover,
-.top-nav .nav-button:focus,
-.top-nav .nav-button:focus-visible,
-.top-nav .nav-button:active {
+/* Navigation state: only the current page may use the accent color. */
+body .site-header .top-nav button.nav-button:not(.active),
+body .site-header .top-nav button.nav-button:not(.active):hover,
+body .site-header .top-nav button.nav-button:not(.active):focus,
+body .site-header .top-nav button.nav-button:not(.active):focus-visible,
+body .site-header .top-nav button.nav-button:not(.active):active {
   color: #aaa99f !important;
-}
-
-.top-nav .nav-button.active,
-.top-nav .nav-button.active:hover,
-.top-nav .nav-button.active:focus,
-.top-nav .nav-button.active:focus-visible,
-.top-nav .nav-button.active:active {
-  color: var(--accent) !important;
-}
-
-.top-nav .nav-button:not(.active):hover,
-.top-nav .nav-button:not(.active):focus,
-.top-nav .nav-button:not(.active):focus-visible,
-.top-nav .nav-button:not(.active):active {
-  color: #aaa99f !important;
-  background: rgba(223,215,181,.025) !important;
-}
-
-.top-nav .nav-button:not(.active)::after {
   background: transparent !important;
+  outline-color: transparent !important;
+}
+
+body .site-header .top-nav button.nav-button:not(.active)::after,
+body .site-header .top-nav button.nav-button:not(.active):hover::after,
+body .site-header .top-nav button.nav-button:not(.active):focus::after,
+body .site-header .top-nav button.nav-button:not(.active):focus-visible::after,
+body .site-header .top-nav button.nav-button:not(.active):active::after {
+  left: 50% !important;
+  right: 50% !important;
+  background: transparent !important;
+}
+
+body .site-header .top-nav button.nav-button.active,
+body .site-header .top-nav button.nav-button.active:hover,
+body .site-header .top-nav button.nav-button.active:focus,
+body .site-header .top-nav button.nav-button.active:focus-visible,
+body .site-header .top-nav button.nav-button.active:active {
+  color: var(--accent) !important;
+  background: rgba(223,215,181,.045) !important;
+}
+
+body .site-header .top-nav button.nav-button.active::after,
+body .site-header .top-nav button.nav-button.active:hover::after,
+body .site-header .top-nav button.nav-button.active:focus::after,
+body .site-header .top-nav button.nav-button.active:focus-visible::after,
+body .site-header .top-nav button.nav-button.active:active::after {
+  left: 14px !important;
+  right: 14px !important;
+  background: var(--accent) !important;
 }
