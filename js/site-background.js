@@ -27,28 +27,22 @@
   function applyBackground(settings) {
     const base = normalizeHex(settings.background_color, '#55564f');
     const start = normalizeHex(settings.background_gradient_start, base);
-    const end = normalizeHex(settings.background_gradient_end, '#3f413c');
+    const end = normalizeHex(settings.background_gradient_end, base);
     const angleRaw = Number(settings.background_gradient_angle ?? 180);
     const angle = Number.isFinite(angleRaw) ? Math.max(0, Math.min(360, angleRaw)) : 180;
-    const enabled = settings.background_gradient_enabled !== false;
+    const enabled = settings.background_gradient_enabled === true;
 
     document.documentElement.style.setProperty('--bg', base);
+    document.documentElement.style.setProperty('--bg-deep', end);
     document.documentElement.style.setProperty('--bg-gradient-start', start);
     document.documentElement.style.setProperty('--bg-gradient-end', end);
     document.documentElement.style.setProperty('--bg-gradient-angle', `${angle}deg`);
+
     document.body.style.backgroundColor = base;
-
-    const textureLayers = [
-      'radial-gradient(circle at 16% 5%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 28%)',
-      'radial-gradient(circle at 84% 18%, rgba(255,255,255,.05), transparent 22%)',
-      'linear-gradient(120deg, rgba(255,255,255,.018) 0 1px, transparent 1px 12px)'
-    ];
-
-    if (enabled) {
-      textureLayers.push(`linear-gradient(${angle}deg, ${start}, ${end})`);
-    }
-
-    document.body.style.backgroundImage = textureLayers.join(',');
+    document.body.style.backgroundImage = enabled
+      ? `linear-gradient(${angle}deg, ${start}, ${end})`
+      : 'none';
+    document.body.style.backgroundAttachment = enabled ? 'fixed' : 'scroll';
   }
 
   async function boot() {
