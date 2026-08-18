@@ -1,0 +1,36 @@
+/* Full-body friendly PROFILE image panel. */
+.profile-layout {
+  grid-template-columns: minmax(300px, 410px) minmax(0, 1fr) !important;
+  gap: 48px !important;
+  align-items: start !important;
+}
+
+.profile-image-panel {
+  width: 100% !important;
+  aspect-ratio: 9 / 16 !important;
+  min-height: 0 !important;
+  max-height: 800px !important;
+  overflow: hidden !important;
+}
+
+.profile-image-panel img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: center top !important;
+  filter: none !important;
+}
+
+@media (max-width: 900px) {
+  .profile-layout {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+
+  .profile-image-panel {
+    width: min(100%, 430px) !important;
+    max-height: 74vh !important;
+    margin: 0 auto !important;
+  }
+}
